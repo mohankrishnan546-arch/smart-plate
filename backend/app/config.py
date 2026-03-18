@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/nutrivision"
+    DATABASE_URL: str = "postgresql://postgres:sathya123@localhost:5432/nutrivision"
 
     # AI Model
     YOLO_MODEL_PATH: str = "yolov8n.pt"
