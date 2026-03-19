@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -53,8 +53,8 @@ export const getTodayMeals = async () => {
   return res.data
 }
 
-export const getDailySummary = async () => {
-  const res = await api.get('/api/v1/meals/summary')
+export const getDailySummary = async (lang = 'en') => {
+  const res = await api.get(`/api/v1/meals/summary?lang=${lang}`)
   return res.data
 }
 
@@ -89,6 +89,16 @@ export const getMedicalRecommendations = async () => {
   return res.data
 }
 
+export const bookProvider = async (providerId) => {
+  const res = await api.post('/api/v1/health/book', { provider_id: providerId })
+  return res.data
+}
+
+export const verifyEmail = async (verifyData) => {
+  const res = await api.post('/api/v1/auth/verify-email', verifyData)
+  return res.data
+}
+
 // ── Auth ──
 export const register = async (userData) => {
   const res = await api.post('/api/v1/auth/register', userData)
@@ -113,6 +123,11 @@ export const getUserProfile = async () => {
 
 export const updateHealthProfile = async (profileData) => {
   const res = await api.put('/api/v1/auth/profile/health', profileData)
+  return res.data
+}
+
+export const updateAccountProfile = async (accountData) => {
+  const res = await api.put('/api/v1/auth/profile/account', accountData)
   return res.data
 }
 

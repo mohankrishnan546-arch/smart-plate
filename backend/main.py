@@ -33,6 +33,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request, call_next):
+    print(f"DEBUG: {request.method} {request.url}")
+    response = await call_next(request)
+    print(f"DEBUG: Response {response.status_code}")
+    return response
+
 # ── API Routers ───────────────────────────────────────────────────────────────
 app.include_router(auth.router,        prefix="/api/v1/auth",       tags=["Auth"])
 app.include_router(recognition.router, prefix="/api/v1/recognize",  tags=["Food Recognition"])

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
-from app.schemas import UserCreate, UserLogin, Token, UserProfile, HealthProfileUpdate, GuestOnboarding
+from app.schemas import UserCreate, UserLogin, Token, UserProfile, HealthProfileUpdate, GuestOnboarding, AccountUpdate, EmailVerify
 import hashlib
 import secrets
 import jwt
@@ -48,6 +48,13 @@ def create_token(user_id: int) -> str:
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
+def send_mock_email(email: str, code: str):
+    print("\n" + "="*50)
+    print(f"📧 MOCK EMAIL SENT TO: {email}")
+    print(f"🔑 YOUR VERIFICATION CODE IS: {code}")
+    print("="*50 + "\n")
+
+
 def get_current_user(db: Session = Depends(get_db), authorization: str = Header(None)):
     """Simple token extraction from Header."""
     if not authorization or not authorization.startswith("Bearer "):
@@ -77,11 +84,29 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
         email=data.email,
         hashed_password=hash_password(data.password),
         full_name=data.full_name,
+        verification_code=None,
+        is_verified=1 # verified by default
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+    
     return Token(access_token=create_token(user.id))
+
+
+@router.post("/verify-email")
+def verify_email(data: EmailVerify, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.verification_code == data.code:
+        user.is_verified = 1
+        user.verification_code = None
+        db.commit()
+        return {"status": "success", "message": "Email verified successfully"}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
 
 
 @router.post("/login", response_model=Token)
@@ -93,6 +118,12 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if user.is_verified == 0:
+        # For demo purposes, we still let them in, but frontend should show verification required
+        # Or we can block them: raise HTTPException(status_code=403, detail="Email not verified")
+        pass
+
     return Token(access_token=create_token(user.id))
 
 
@@ -200,7 +231,25 @@ def update_health_profile(data: HealthProfileUpdate, db: Session = Depends(get_d
         user.weight_kg = data.weight_kg
     if data.height_cm is not None:
         user.height_cm = data.height_cm
+    if data.activity_level is not None:
+        user.activity_level = data.activity_level
+    if data.goal is not None:
+        user.goal = data.goal
     if data.health_conditions is not None:
         user.health_conditions = data.health_conditions
     db.commit()
     return {"message": "Health profile updated"}
+
+
+@router.put("/profile/account")
+def update_account_profile(data: AccountUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    if data.full_name is not None:
+        user.full_name = data.full_name
+    if data.email is not None:
+        # Check if email is already taken
+        existing = db.query(User).filter(User.email == data.email).first()
+        if existing and existing.id != user.id:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        user.email = data.email
+    db.commit()
+    return {"message": "Account profile updated"}

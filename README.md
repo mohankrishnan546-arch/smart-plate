@@ -1,6 +1,6 @@
-# NutriVision AI 🥗
+# Smart Plate AI 🥗
 
-NutriVision AI is a Food Recognition & Health Analytics Platform built strictly with the requested "Simple Yet Powerful Free Stack" (Final Recommendation).
+Smart Plate AI is a Food Recognition & Health Analytics Platform built strictly with the requested "Simple Yet Powerful Free Stack" (Final Recommendation).
 
 ## 🏗 Stack Architecture
 
@@ -71,7 +71,7 @@ npm run dev
 1. Go to [Vercel](https://vercel.com/) and import your GitHub repository.
 2. Select the **`frontend`** folder as the Root Directory.
 3. The framework preset should automatically detect **Vite**.
-4. Set the Environment Variable `VITE_API_URL` to your Render backend URL (e.g., `https://nutrivision-api.onrender.com`).
+4. Set the Environment Variable `VITE_API_URL` to your Render backend URL (e.g., `https://smart-plate-api.onrender.com`).
 5. Click **Deploy**.
 
 ---

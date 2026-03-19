@@ -1,1 +1,1 @@
-# NutriVision AI Backend Package
+# Smart Plate AI Backend Package

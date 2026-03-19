@@ -1,12 +1,6 @@
 fastapi
 uvicorn[standard]
 sqlalchemy
-psycopg2-binary
-ultralytics
-opencv-python-headless
-pandas
-python-multipart
-pydantic
 pydantic-settings
 python-dotenv
 PyJWT

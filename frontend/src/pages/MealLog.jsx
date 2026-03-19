@@ -1,33 +1,43 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { UtensilsCrossed, Plus, Trash2, Clock, Flame, Loader2 } from 'lucide-react'
-import { getTodayMeals, logMeal, deleteMeal, getDailySummary } from '../api'
+import { 
+  Plus, Search, Calendar, ChevronRight, Clock, Flame, 
+  Droplets, Wheat, Drumstick, Filter, Trash2, Loader2,
+  PieChart as PieIcon, Activity, TrendingUp
+} from 'lucide-react'
+import { getMealHistory, deleteMeal, getDailySummary } from '../api'
+import { useLanguage } from '../App'
 
-const mealTypes = [
-  { id: 'all', label: 'All', icon: '🍽️' },
-  { id: 'breakfast', label: 'Breakfast', icon: '🌅' },
-  { id: 'lunch', label: 'Lunch', icon: '☀️' },
-  { id: 'dinner', label: 'Dinner', icon: '🌙' },
-  { id: 'snack', label: 'Snack', icon: '🍿' },
-]
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+}
+
+const item = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 }
+}
 
 export default function MealLog() {
+  const { t } = useLanguage()
   const [meals, setMeals] = useState([])
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [showAdd, setShowAdd] = useState(false)
-  const [newMeal, setNewMeal] = useState({ name: '', type: 'lunch', calories: '', protein: '', carbs: '', fat: '' })
+  const [filter, setFilter] = useState('all')
 
   const fetchMeals = async () => {
-    setLoading(true)
     try {
-      const data = await getTodayMeals()
-      setMeals(data)
-      const summaryData = await getDailySummary()
-      setSummary(summaryData)
+      const [history, daily] = await Promise.all([
+        getMealHistory(30),
+        getDailySummary()
+      ])
+      setMeals(history)
+      setSummary(daily)
     } catch (err) {
-      console.error("Fetch meals error:", err)
+      console.error("Meal fetch error:", err)
     } finally {
       setLoading(false)
     }
@@ -37,214 +47,183 @@ export default function MealLog() {
     fetchMeals()
   }, [])
 
-  const filtered = activeFilter === 'all' ? meals : meals.filter(m => m.meal_type === activeFilter)
-  const totalCal = summary?.total_calories || 0
-  const totalPro = summary?.total_protein || 0
-
-  const handleAdd = async () => {
-    if (!newMeal.name) return
-    try {
-      await logMeal({
-        food_name: newMeal.name,
-        meal_type: newMeal.type,
-        calories: Number(newMeal.calories) || 0,
-        protein_g: Number(newMeal.protein) || 0,
-        carbs_g: Number(newMeal.carbs) || 0,
-        fat_g: Number(newMeal.fat) || 0,
-      })
-      fetchMeals()
-      setNewMeal({ name: '', type: 'lunch', calories: '', protein: '', carbs: '', fat: '' })
-      setShowAdd(false)
-    } catch (err) {
-      console.error("Add meal error:", err)
-    }
-  }
-
   const handleDelete = async (id) => {
+    if (!confirm(t.confirmDelete || 'Scale back this entry?')) return
     try {
       await deleteMeal(id)
       fetchMeals()
     } catch (err) {
-      console.error("Delete meal error:", err)
+      console.error("Delete error:", err)
     }
   }
 
+  const filteredMeals = meals.filter(m => 
+    filter === 'all' ? true : m.meal_type === filter
+  )
+
+  const mealTypes = [
+    { id: 'all', label: t.all, icon: Filter },
+    { id: 'breakfast', label: t.breakfast, icon: Clock },
+    { id: 'lunch', label: t.lunch, icon: Flame },
+    { id: 'dinner', label: t.dinner, icon: Activity },
+    { id: 'snack', label: t.snack, icon: TrendingUp },
+  ]
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-7xl mx-auto pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Meal Log</h1>
-          <p className="text-dark-400 mt-1">Track everything you eat throughout the day</p>
+           <div className="flex items-center gap-3 mb-4">
+                <div className="px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-500 flex items-center gap-2">
+                    <PieIcon className="w-3.5 h-3.5 animate-pulse" />
+                    <span className="text-[9px] uppercase font-black tracking-[0.2em]">{t.biologicalLog}</span>
+                </div>
+            </div>
+          <h1 className="text-5xl font-black text-white leading-none tracking-tighter uppercase mb-4">
+             {t.mealLog} 🍱
+          </h1>
+          <p className="text-dark-400 font-bold italic tracking-wide max-w-xl">{t.trackEating}</p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Meal
+        <button onClick={() => window.location.href = '/scan'} 
+                className="btn-primary flex items-center gap-3 px-10 py-5 rounded-[2rem] shadow-3xl shadow-primary-500/20 active:scale-95 transition-transform group">
+          <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+          <span className="font-black uppercase tracking-widest text-xs">{t.addMeal}</span>
         </button>
       </div>
 
-      {/* Summary Bar */}
-      <div className="glass p-5 mb-6 flex flex-wrap items-center gap-8 shadow-xl shadow-primary-500/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-orange-400/10">
-            <Flame className="w-5 h-5 text-orange-400" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold leading-none">{totalCal.toFixed(0)}</p>
-            <p className="text-[10px] text-dark-500 uppercase font-bold tracking-wider">Calories Today</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary-500/10">
-            <UtensilsCrossed className="w-5 h-5 text-primary-500" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold leading-none">{totalPro.toFixed(1)}g</p>
-            <p className="text-[10px] text-dark-500 uppercase font-bold tracking-wider">Protein Target</p>
-          </div>
-        </div>
-        <div className="flex-1 flex justify-end">
-            <span className="text-xs text-dark-500 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-              {meals.length} items recorded
-            </span>
-        </div>
-      </div>
-
-      {/* Add Meal Form */}
-      <AnimatePresence>
-        {showAdd && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, height: 0 }} 
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -20, height: 0 }}
-            className="glass p-6 mb-6 overflow-hidden"
-          >
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-primary-500" /> Log a New Meal
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Food Name</label>
-                <input className="input-glass" placeholder="e.g. Oats with Banana" value={newMeal.name}
-                      onChange={e => setNewMeal({ ...newMeal, name: e.target.value })} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Sidebar Filters */}
+        <div className="lg:col-span-1 space-y-8">
+           <div className="glass p-8 overflow-hidden relative group">
+              <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
+                <Filter className="w-32 h-32" />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Meal Type</label>
-                <select className="input-glass" value={newMeal.type}
-                        onChange={e => setNewMeal({ ...newMeal, type: e.target.value })}>
-                  <option value="breakfast">Breakfast</option>
-                  <option value="lunch">Lunch</option>
-                  <option value="dinner">Dinner</option>
-                  <option value="snack">Snack</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Calories (kcal)</label>
-                <input className="input-glass" placeholder="0" type="number" value={newMeal.calories}
-                      onChange={e => setNewMeal({ ...newMeal, calories: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Protein (g)</label>
-                <input className="input-glass" placeholder="0" type="number" value={newMeal.protein}
-                      onChange={e => setNewMeal({ ...newMeal, protein: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Carbs (g)</label>
-                <input className="input-glass" placeholder="0" type="number" value={newMeal.carbs}
-                      onChange={e => setNewMeal({ ...newMeal, carbs: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-dark-500 ml-1">Fat (g)</label>
-                <input className="input-glass" placeholder="0" type="number" value={newMeal.fat}
-                      onChange={e => setNewMeal({ ...newMeal, fat: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={handleAdd} className="btn-primary flex-1">Save Meal Log</button>
-              <button onClick={() => setShowAdd(false)} className="btn-secondary flex-1">Cancel</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-        {mealTypes.map(t => (
-          <button key={t.id}
-            onClick={() => setActiveFilter(t.id)}
-            className={`glass-pill text-sm whitespace-nowrap transition-all flex items-center gap-2
-              ${activeFilter === t.id ? 'bg-primary-500/20 text-primary-500 border-primary-500/30' : 'hover:border-primary-500/20'}`}>
-            <span>{t.icon}</span> {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Meal List */}
-      <div className="space-y-3">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-            <p className="text-sm font-medium">Fetching your meal history...</p>
-          </div>
-        ) : filtered.length > 0 ? (
-          filtered.map((meal, i) => (
-            <motion.div
-              key={meal.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass p-4 sm:p-5 flex items-center justify-between group hover:border-primary-500/20 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                  {mealTypes.find(t => t.id === meal.meal_type)?.icon || '🍲'}
-                </div>
-                <div>
-                  <p className="font-bold text-lg leading-tight">{meal.food_name}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-dark-500" />
-                      <span className="text-[10px] text-dark-400 font-bold">
-                        {new Date(meal.logged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+              <h3 className="text-xl font-black text-white mb-8 tracking-tighter uppercase relative z-10">{t.mealType}</h3>
+              <div className="space-y-3 relative z-10">
+                {mealTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => setFilter(type.id)}
+                    className={`w-full flex items-center justify-between p-5 rounded-[1.8rem] transition-all duration-300 transform active:scale-95
+                      ${filter === type.id 
+                        ? 'bg-primary-500 text-dark-950 shadow-2xl shadow-primary-500/20 rotate-0' 
+                        : 'bg-white/[0.02] border border-white/5 text-dark-400 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <type.icon className="w-4 h-4" />
+                      <span className="font-black uppercase tracking-widest text-[10px]">{type.label}</span>
                     </div>
-                    <span className="text-[9px] px-2 py-0.5 rounded-lg bg-primary-500/10 text-primary-400 uppercase font-bold tracking-wider">
-                      {meal.meal_type}
-                    </span>
-                  </div>
-                </div>
+                    {filter === type.id && <ChevronRight className="w-4 h-4" />}
+                  </button>
+                ))}
               </div>
-              <div className="flex items-center gap-6">
-                <div className="hidden md:flex gap-6 text-sm">
-                  <div className="text-center">
-                    <p className="text-[10px] text-dark-500 font-bold uppercase mb-0.5">Calories</p>
-                    <p className="text-orange-400 font-bold">{meal.calories.toFixed(0)}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-dark-500 font-bold uppercase mb-0.5">Protein</p>
-                    <p className="text-primary-500 font-bold">{meal.protein_g.toFixed(1)}g</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-dark-500 font-bold uppercase mb-0.5">Carbs</p>
-                    <p className="text-secondary-400 font-bold">{meal.carbs_g.toFixed(1)}g</p>
-                  </div>
+           </div>
+
+           {/* Quick Stats Summary */}
+           <div className="glass p-8 bg-primary-500/[0.02] relative overflow-hidden border-primary-500/10">
+                <h3 className="text-xl font-black text-white mb-8 tracking-tighter uppercase">{t.dailySummary}</h3>
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-[9px] font-black text-dark-500 uppercase tracking-widest">{t.caloriesToday}</span>
+                            <span className="text-lg font-black text-white italic">{summary?.total_calories || 0}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-dark-800 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(((summary?.total_calories || 0) / 2000) * 100, 100)}%` }} className="h-full bg-primary-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-[9px] font-black text-dark-500 uppercase tracking-widest">{t.proteinTarget}</span>
+                            <span className="text-lg font-black text-white italic">{summary?.total_protein || 0}g</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-dark-800 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(((summary?.total_protein || 0) / 60) * 100, 100)}%` }} className="h-full bg-secondary-400 shadow-[0_0_10px_rgba(72,172,254,0.5)]" />
+                        </div>
+                    </div>
                 </div>
-                <button onClick={() => handleDelete(meal.id)}
-                  className="p-2 rounded-xl bg-red-500/5 hover:bg-red-500/10 text-red-500/40 hover:text-red-500 transition-all border border-transparent hover:border-red-500/20">
-                  <Trash2 className="w-5 h-5" />
-                </button>
+           </div>
+        </div>
+
+        {/* Main Log */}
+        <div className="lg:col-span-3">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-40 glass border-dashed">
+              <Loader2 className="w-12 h-12 text-primary-500 animate-spin mb-6" />
+              <p className="text-dark-500 font-black uppercase tracking-[0.4em] animate-pulse text-[10px]">{t.gatheringPoints}</p>
+            </div>
+          ) : filteredMeals.length === 0 ? (
+            <div className="glass p-24 text-center border-dashed border-dark-800 bg-dark-950/40 opacity-80">
+                <div className="w-24 h-24 rounded-[3rem] bg-dark-900 border border-white/5 flex items-center justify-center mx-auto mb-10 shadow-inner">
+                    <Calendar className="w-10 h-10 text-dark-700" />
+                </div>
+                <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">{t.noMeals}</h3>
+                <p className="text-dark-500 font-bold uppercase tracking-[0.2em] text-[10px] italic">{t.trackEating}</p>
+            </div>
+          ) : (
+            <motion.div
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between mb-8 pl-4 pr-10">
+                <p className="text-[9px] text-dark-600 font-black uppercase tracking-[0.3em]">
+                   {filteredMeals.length} {t.itemsRecorded}
+                </p>
               </div>
+              
+              {filteredMeals.map((meal) => (
+                <motion.div
+                  key={meal.id}
+                  variants={item}
+                  className="glass group p-6 flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-primary-500/20 transition-all duration-500 rounded-[2.5rem] relative overflow-hidden"
+                >
+                  <div className="absolute top-[-10%] right-[-5%] opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none">
+                     <Flame className="w-40 h-40 text-orange-500" />
+                  </div>
+                  <div className="flex items-center gap-8 w-full md:w-auto relative z-10">
+                    <div className="w-20 h-20 rounded-[2rem] bg-dark-900 flex items-center justify-center text-4xl border border-white/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-2xl">
+                      {meal.food_name.toLowerCase().includes('chicken') ? '🍗' : '🍲'}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="px-3 py-1 rounded-full bg-white/5 text-dark-400 text-[8px] font-black uppercase tracking-widest border border-white/5">
+                            {t[meal.meal_type] || meal.meal_type}
+                        </span>
+                        <span className="text-[9px] text-dark-600 font-bold flex items-center gap-1.5 uppercase tracking-widest">
+                           <Clock className="w-3 h-3" /> {new Date(meal.logged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-black text-white capitalize tracking-tighter group-hover:text-primary-400 transition-colors italic">
+                        {meal.food_name.replace(/_/g, ' ')}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-12 mt-6 md:mt-0 relative z-10 w-full md:w-auto justify-between md:justify-end px-4 md:px-0">
+                    <div className="flex gap-8">
+                        <div className="text-center">
+                            <p className="text-xl font-black text-orange-400 leading-none mb-1">{(meal.calories || 0).toFixed(0)}</p>
+                            <p className="text-[8px] text-dark-600 font-black uppercase tracking-widest">Kcal</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-xl font-black text-primary-400 leading-none mb-1">{(meal.protein_g || 0).toFixed(1)}g</p>
+                            <p className="text-[8px] text-dark-600 font-black uppercase tracking-widest">{t.protein}</p>
+                        </div>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(meal.id)}
+                      className="p-4 rounded-2xl bg-red-500/5 text-red-500/30 hover:bg-red-500/10 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))
-        ) : (
-          <div className="glass p-16 text-center shadow-inner">
-            <UtensilsCrossed className="w-12 h-12 text-dark-700 mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">No meals found</h3>
-            <p className="text-dark-400 max-w-[280px] mx-auto text-sm italic">
-              {activeFilter === 'all' 
-                ? "You haven't logged any meals yet today. Start by scanning or adding one manually!"
-                : `No ${activeFilter} meals recorded yet today.`}
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

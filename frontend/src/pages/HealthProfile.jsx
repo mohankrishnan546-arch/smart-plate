@@ -1,33 +1,17 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Heart, Shield, AlertTriangle, CheckCircle, Activity, User, Save, Loader2 } from 'lucide-react'
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts'
+import { 
+  User, Activity, Target, Shield, Save, 
+  Loader2, CheckCircle, AlertCircle, Heart
+} from 'lucide-react'
 import { getUserProfile, updateHealthProfile } from '../api'
-
-const conditionOptions = [
-  { id: 'Diabetes', label: 'Diabetes', icon: '🩸' },
-  { id: 'Hypertension', label: 'Hypertension', icon: '❤️‍🩹' },
-  { id: 'Heart Disease', label: 'Heart Disease', icon: '🫀' },
-  { id: 'Kidney Disease', label: 'Kidney Disease', icon: '🫘' },
-  { id: 'Obesity', label: 'Obesity', icon: '⚖️' },
-  { id: 'Celiac Disease', label: 'Celiac Disease', icon: '🌾' },
-  { id: 'Anemia', label: 'Anemia', icon: '🩸' },
-  { id: 'General Health', label: 'General Health', icon: '🥗' },
-]
-
-const riskData = [
-  { nutrient: 'Calories', value: 65 },
-  { nutrient: 'Sodium', value: 82 },
-  { nutrient: 'Sugar', value: 45 },
-  { nutrient: 'Fat', value: 55 },
-  { nutrient: 'Cholesterol', value: 30 },
-  { nutrient: 'Fiber', value: 70 },
-]
+import { useLanguage } from '../App'
 
 export default function HealthProfile() {
+  const { t } = useLanguage()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -44,206 +28,202 @@ export default function HealthProfile() {
     fetchProfile()
   }, [])
 
-  const handleSave = async () => {
-    setSaving(true)
+  const handleUpdate = async () => {
+    setUpdating(true)
     setMessage('')
     try {
-      await updateHealthProfile({
-        age: profile.age,
-        weight_kg: profile.weight_kg,
-        height_cm: profile.height_cm,
-        health_conditions: profile.health_conditions
-      })
-      setMessage('Profile updated successfully!')
+      await updateHealthProfile(profile)
+      setMessage(t.success || 'Health DNA synchronized successfully!')
       setTimeout(() => setMessage(''), 3000)
     } catch (err) {
-      console.error("Profile update error:", err)
-      setMessage('Failed to update profile.')
+      console.error("Update error:", err)
+      setMessage(t.error || 'Biological synchronization failed.')
     } finally {
-      setSaving(false)
+      setUpdating(false)
     }
-  }
-
-  const toggleCondition = (id) => {
-    const current = profile.health_conditions || []
-    const updated = current.includes(id) 
-      ? current.filter(c => c !== id) 
-      : [...current, id]
-    setProfile({ ...profile, health_conditions: updated })
   }
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
       <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
-      <p className="mt-4 text-dark-400 font-bold uppercase tracking-widest text-xs">Accessing Medical Records...</p>
+      <p className="mt-4 text-dark-500 font-black uppercase tracking-[0.4em] text-[10px] animate-pulse">{t.gatheringPoints}</p>
     </div>
   )
 
-  const bmi = (profile.weight_kg / Math.pow(profile.height_cm / 100, 2)).toFixed(1)
-  const riskScore = 35 // Placeholder logic
+  const conditionOptions = [
+    { id: 'General Health', label: t.generalHealth },
+    { id: 'Diabetes', label: t.Diabetes },
+    { id: 'Hypertension', label: t.Hypertension },
+    { id: 'Heart Disease', label: t.HeartDisease },
+    { id: 'Kidney Disease', label: t.kidneyDisease },
+    { id: 'Anemia', label: t.anemia },
+    { id: 'Celiac Disease', label: t.celiacDisease },
+  ]
 
   return (
-    <div className="max-w-6xl mx-auto pb-12">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-black text-white leading-none">Health <span className="gradient-text">DNA</span></h1>
-          <p className="text-dark-400 mt-2 font-medium">Manage clinical conditions and biometric markers</p>
+    <div className="max-w-6xl mx-auto pb-20">
+      <div className="flex items-center gap-6 mb-16">
+        <div className="p-5 rounded-[2.5rem] bg-primary-500/10 border border-primary-500/20 text-primary-500 shadow-2xl shadow-primary-500/10">
+            <Shield className="w-10 h-10" />
         </div>
-        <button 
-          onClick={handleSave} 
-          disabled={saving}
-          className="btn-primary flex items-center gap-2 px-8 shadow-xl shadow-primary-500/20"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          <span>{saving ? 'Saving...' : 'Sync Profile'}</span>
-        </button>
+        <div>
+          <h1 className="text-6xl font-black text-white leading-none tracking-tighter uppercase mb-4">
+             Health <span className="gradient-text">DNA</span> 🧬
+          </h1>
+          <p className="text-dark-400 font-bold italic tracking-wide">{t.aiIntelligence} biological profile management</p>
+        </div>
       </div>
 
-      {message && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-4 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 font-bold text-center">
-          {message}
-        </motion.div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-10">
+          {/* Biometrics */}
+          <section className="glass p-10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity">
+                <Activity className="w-48 h-48 text-primary-500" />
+            </div>
+            <div className="flex items-center gap-4 mb-10 relative z-10">
+              <div className="p-3 rounded-2xl bg-primary-500/10 text-primary-500">
+                <Activity className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">{t.biometrics}</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 relative z-10">
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.gender}</p>
+                <div className="flex gap-4">
+                  {['Male', 'Female'].map(g => (
+                    <button
+                      key={g}
+                      onClick={() => setProfile({...profile, gender: g})}
+                      className={`flex-1 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all
+                        ${profile.gender === g 
+                          ? 'bg-primary-500 text-dark-950 shadow-2xl shadow-primary-500/20' 
+                          : 'bg-white/5 border border-white/5 text-dark-500 hover:text-white'}`}
+                    >
+                      {g === 'Male' ? t.Male : t.Female}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.ageYrs}</p>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-3xl p-6 text-xl font-black text-white outline-none focus:border-primary-500/50" 
+                  value={profile.age || ''} 
+                  onChange={e => setProfile({...profile, age: e.target.value})} 
+                />
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile & Risk */}
-        <div className="space-y-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass p-8 group">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-primary-500/20 to-secondary-400/20 flex items-center justify-center border border-primary-500/20 group-hover:rotate-6 transition-transform">
-                <User className="w-8 h-8 text-primary-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 relative z-10">
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.weightKg}</p>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-3xl p-6 text-xl font-black text-white outline-none focus:border-primary-500/50 shadow-inner group-hover:bg-dark-900 transition-colors" 
+                  value={profile.weight_kg || ''} 
+                  onChange={e => setProfile({...profile, weight_kg: e.target.value})} 
+                />
               </div>
-              <div>
-                <h3 className="font-black text-white text-xl uppercase tracking-tighter">Biometrics</h3>
-                <p className="text-[10px] text-dark-500 font-bold uppercase tracking-widest">Core Health Markers</p>
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.heightCm}</p>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-3xl p-6 text-xl font-black text-white outline-none focus:border-primary-500/50 shadow-inner group-hover:bg-dark-900 transition-colors" 
+                  value={profile.height_cm || ''} 
+                  onChange={e => setProfile({...profile, height_cm: e.target.value})} 
+                />
               </div>
             </div>
-            {[
-              ['Age', profile.age, v => setProfile({...profile, age: +v})],
-              ['Weight (kg)', profile.weight_kg, v => setProfile({...profile, weight_kg: +v})],
-              ['Height (cm)', profile.height_cm, v => setProfile({...profile, height_cm: +v})]
-            ].map(([label, val, fn]) => (
-              <div key={label} className="flex justify-between items-center p-4 rounded-2xl bg-white/[0.03] border border-white/5 mb-3 hover:bg-white/[0.06] transition-colors">
-                <span className="text-[10px] font-black text-dark-500 uppercase tracking-widest">{label}</span>
-                <input type="number" value={val} onChange={e => fn(e.target.value)}
-                       className="w-20 text-right bg-transparent text-white font-black text-lg outline-none" />
-              </div>
-            ))}
-            <div className="flex justify-between items-center p-4 rounded-2xl bg-primary-500/5 border border-primary-500/10 mt-6">
-              <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">Calculated BMI</span>
-              <span className="text-2xl font-black text-primary-400">{bmi}</span>
-            </div>
-          </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                      className="glass p-8 text-center relative overflow-hidden">
-            <div className="absolute top-[-20%] right-[-10%] opacity-5">
-                <Shield className="w-32 h-32" />
-            </div>
-            <h3 className="font-black text-white text-xl uppercase tracking-tighter mb-6 flex items-center justify-center gap-2">
-              <Shield className="w-5 h-5 text-primary-500" /> Vulnerability Score
-            </h3>
-            <div className="relative w-36 h-36 mx-auto mb-6">
-              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#10b981" strokeWidth="12"
-                        strokeDasharray={`${riskScore*3.14} ${314-riskScore*3.14}`} strokeLinecap="round" 
-                        style={{ transition: 'stroke-dasharray 2s ease-in-out' }} />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-white">{riskScore}</span>
-                <span className="text-[10px] text-dark-500 font-bold uppercase tracking-widest">Safety INDEX</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.activityLevel}</p>
+                <select 
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-3xl p-6 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50"
+                  value={profile.activity_level}
+                  onChange={e => setProfile({...profile, activity_level: e.target.value})}
+                >
+                   <option value="Sedentary">{t.sedentary}</option>
+                   <option value="Active">{t.active}</option>
+                </select>
+              </div>
+              <div className="space-y-3">
+                <p className="text-[10px] text-dark-500 font-black uppercase tracking-widest ml-2">{t.goals}</p>
+                <select 
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-3xl p-6 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50"
+                  value={profile.goal}
+                  onChange={e => setProfile({...profile, goal: e.target.value})}
+                >
+                   <option value="Lose Weight">{t.loseWeight}</option>
+                   <option value="Maintain">{t.maintain}</option>
+                   <option value="Gain Muscle">{t.gainMuscle}</option>
+                </select>
               </div>
             </div>
-            <p className="text-green-400 font-black uppercase tracking-widest text-xs py-2 px-6 bg-green-500/10 rounded-full inline-block">Low Risk Profile</p>
-          </motion.div>
+          </section>
+
+          {/* Conditions */}
+          <section className="glass p-10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity">
+                <Heart className="w-48 h-48 text-secondary-400" />
+            </div>
+            <div className="flex items-center gap-4 mb-10 relative z-10">
+              <div className="p-3 rounded-2xl bg-secondary-400/10 text-secondary-400">
+                <Heart className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">{t.healthConditions}</h3>
+            </div>
+            <div className="flex flex-wrap gap-4 relative z-10">
+              {conditionOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setProfile({...profile, medical_history: opt.id})}
+                  className={`px-8 py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 transform active:scale-95 border-2
+                    ${profile.medical_history === opt.id 
+                      ? 'bg-secondary-400 text-dark-950 border-secondary-400 shadow-3xl shadow-secondary-400/20' 
+                      : 'bg-white/[0.02] border-white/5 text-dark-400 hover:bg-white/5'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Conditions */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                    className="glass p-8 flex flex-col">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
-                <Heart className="w-6 h-6" />
-            </div>
-            <div>
-                <h3 className="font-black text-white text-xl uppercase tracking-tighter leading-none">Clinical Conditions</h3>
-                <p className="text-[10px] text-dark-500 font-bold uppercase tracking-widest mt-1">Check all that apply</p>
-            </div>
-          </div>
-          <div className="space-y-3 flex-1 overflow-y-auto pr-2 max-h-[500px] scrollbar-hide">
-            {conditionOptions.map(cond => {
-              const isActive = (profile.health_conditions || []).includes(cond.id)
-              return (
-                <button key={cond.id} onClick={() => toggleCondition(cond.id)}
-                  className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all duration-300
-                    ${isActive ? 'bg-primary-500/10 border-2 border-primary-500/30 shadow-xl shadow-primary-500/5' : 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.06]'}`}>
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl group-hover:scale-110 transition-transform">{cond.icon}</span>
-                    <span className={`font-bold transition-colors ${isActive ? 'text-primary-400' : 'text-dark-300'}`}>{cond.label}</span>
-                  </div>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all
-                    ${isActive ? 'bg-primary-500 text-dark-900 border-transparent' : 'border-2 border-dark-600'}`}>
-                    {isActive && <CheckCircle className="w-4 h-4" />}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-          {profile.health_conditions?.length > 0 && (
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                        className="mt-6 p-5 rounded-3xl bg-amber-500/5 border-2 border-amber-500/20 border-dashed">
-              <div className="flex items-center gap-3 mb-2">
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
-                <span className="text-xs font-black uppercase tracking-widest text-amber-500">Clinical Impact Detected</span>
+        {/* Sidebar Controls */}
+        <div className="space-y-8">
+           <div className="glass p-10 bg-primary-500/5 border-primary-500/10">
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary-500">{t.syncProfile}</span>
               </div>
-              <p className="text-xs text-dark-400 font-medium leading-relaxed italic">
-                 AI analysis is active for: {profile.health_conditions.join(', ')}. 
-                 Food scans will apply medical-specific safety constraints.
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
+              <h4 className="text-white font-black text-lg mb-6 leading-tight uppercase tracking-tighter italic">Maintain biological integrity through periodic updates.</h4>
+              
+              {message && (
+                <div className="mb-8 p-5 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-black text-center uppercase tracking-widest italic animate-bounce">
+                   {message}
+                </div>
+              )}
 
-        {/* Radar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                    className="glass p-8 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-               <div className="p-3 rounded-2xl bg-primary-500/10 text-primary-500">
-                    <Activity className="w-6 h-6" />
-                </div>
-                <div>
-                    <h3 className="font-black text-white text-xl uppercase tracking-tighter leading-none">Nutrition Map</h3>
-                    <p className="text-[10px] text-dark-500 font-bold uppercase tracking-widest mt-1">Biometric Breakdown</p>
-                </div>
-            </div>
-            
-            <div className="relative h-[320px] mb-8">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={riskData}>
-                        <PolarGrid stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
-                        <PolarAngleAxis dataKey="nutrient" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 900 }} />
-                        <Radar name="Intake" dataKey="value" stroke="#00f2fe" fill="#00f2fe" fillOpacity={0.2} strokeWidth={3} />
-                    </RadarChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
-                    <Activity className="w-40 h-40 text-primary-500" />
-                </div>
-            </div>
-          </div>
+              <button 
+                onClick={handleUpdate} 
+                disabled={updating}
+                className="w-full btn-primary py-6 rounded-3xl flex items-center justify-center gap-4 shadow-3xl shadow-primary-500/30 active:scale-95 transition-transform"
+              >
+                {updating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                <span className="font-black uppercase tracking-widest text-xs">{t.saveDetails}</span>
+              </button>
+           </div>
 
-          <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-dark-500 mb-3">Health Status Summary</p>
-              <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-green-500/20 flex items-center justify-center">
-                     <Shield className="w-5 h-5 text-green-500" />
-                  </div>
-                  <p className="text-sm font-bold text-dark-200">System is optimized for current metabolic load.</p>
-              </div>
-          </div>
-        </motion.div>
+           <div className="glass p-8 border-dashed bg-dark-950/40">
+                <div className="flex items-center gap-4 text-dark-500">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-[10px] font-bold leading-relaxed italic uppercase tracking-wider">{t.disclaimerNote}</p>
+                </div>
+           </div>
+        </div>
       </div>
     </div>
   )

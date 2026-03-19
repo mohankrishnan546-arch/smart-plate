@@ -3,15 +3,15 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Database
-    DATABASE_URL: str = "postgresql://postgres:sathya123@localhost:5432/nutrivision"
+    # Database — Set to SQLite for zero-config local development
+    DATABASE_URL: str = "sqlite:///./smartplate.db"
 
     # AI Model
     YOLO_MODEL_PATH: str = "yolov8n.pt"
     GEMINI_API_KEY: str = ""
 
     # JWT
-    SECRET_KEY: str = "nutrivision-super-secret-key-change-in-production"
+    SECRET_KEY: str = "smartplate-super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 

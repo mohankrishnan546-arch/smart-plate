@@ -1,13 +1,14 @@
 """Health rule engine router — medical condition-based alerts."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List, Optional
-from app.services.health_engine import evaluate_health_alerts, get_condition_rules, HEALTH_RULES
-from app.services.hmis_engine import get_care_recommendations
-from app.models import User, MedicalProvider
 from sqlalchemy.orm import Session
+
+from app.services.health_engine import evaluate_health_alerts, get_condition_rules, HEALTH_RULES
+
+from app.models import User, MedicalProvider
 from app.database import get_db
-from fastapi import Depends
+from app.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -22,6 +23,11 @@ class HealthCheckRequest(BaseModel):
     cholesterol_mg: float = 0
     fiber_g: float = 0
     conditions: Optional[List[str]] = []
+
+
+class BookingRequest(BaseModel):
+    provider_id: int
+    appointment_date: Optional[str] = None
 
 
 @router.post("/check")
@@ -69,79 +75,96 @@ def list_supported_conditions():
     ]
 
 
+SEED_PROVIDERS = [
+    MedicalProvider(name="Apollo Heart Institute", type="hospital", specialty="Cardiology",
+        location="Chennai, TN", rating=4.8, description="State-of-the-art cardiac care facility.",
+        contact="+91 44 2829 3333", associated_conditions=["hypertension", "heart_disease"]),
+    MedicalProvider(name="Dr. Aruna's Diabetes Clinic", type="doctor", specialty="Diabetologist",
+        location="Coimbatore, TN", rating=4.9, description="Leading expert in glycemic control.",
+        contact="+91 422 231 6500", associated_conditions=["diabetes"]),
+    MedicalProvider(name="Fortis Multi-Speciality", type="hospital", specialty="General Medicine",
+        location="Bangalore", rating=4.6, description="Comprehensive metabolic and dietary counseling.",
+        contact="+91 80 6621 4444", associated_conditions=["obesity", "anemia", "general_health"]),
+    MedicalProvider(name="Dr. Rajesh Kumar", type="doctor", specialty="Nephrologist",
+        location="Chennai, TN", rating=4.7, description="Expert in renal care and chronic kidney disease.",
+        contact="+91 44 4567 8901", associated_conditions=["kidney_disease"]),
+    MedicalProvider(name="AIIMS Dietetics Dept", type="hospital", specialty="Dietetics",
+        location="New Delhi", rating=4.9, description="Expert dietary counseling for all conditions.",
+        contact="+91 11 2658 8500", associated_conditions=["celiac", "anemia", "general_health"]),
+    MedicalProvider(name="Dr. Priya Menon", type="doctor", specialty="Hematologist",
+        location="Kochi, Kerala", rating=4.8, description="Specialist in blood disorders and anemia management.",
+        contact="+91 484 285 1234", associated_conditions=["anemia"]),
+]
+
+
+@router.post("/book")
+def book_provider(data: BookingRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Create a new medical booking."""
+    from app.models import MedicalBooking
+    import datetime
+
+    # Check if provider exists
+    provider = db.query(MedicalProvider).filter(MedicalProvider.id == data.provider_id).first()
+    if not provider:
+        return {"error": "Provider not found"}, 404
+
+    new_booking = MedicalBooking(
+        user_id=user.id,
+        provider_id=data.provider_id,
+        appointment_date=datetime.datetime.now(), # Default to now for sample
+        status="Confirmed"
+    )
+    db.add(new_booking)
+    db.commit()
+    db.refresh(new_booking)
+
+    return {
+        "message": "Booked Successfully",
+        "booking_id": new_booking.id,
+        "provider_name": provider.name,
+        "status": new_booking.status
+    }
+
+
 @router.get("/recommendations")
-def get_provider_recommendations(db: Session = Depends(get_db)):
-    """Fetch AI-driven doctor and hospital recommendations based on user health."""
-    user = db.query(User).first() # In production, use get_current_user
+def get_provider_recommendations(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Fetch medical provider recommendations based on user health conditions."""
     if not user:
         return []
-    
-    # 1. Ensure we have some seed data for providers if table is empty
+
+    # Seed providers if table is empty
     if db.query(MedicalProvider).count() == 0:
-        seed_providers = [
-            MedicalProvider(
-                name="Apollo Heart Institute",
-                type="hospital",
-                specialty="Cardiology",
-                location="Chennai, TN",
-                associated_conditions=["hypertension", "heart_disease"],
-                description="State-of-the-art cardiac care facility with top-tier specialists.",
-                rating=4.8
-            ),
-            MedicalProvider(
-                name="Dr. Aruna's Diabetes Clinic",
-                type="doctor",
-                specialty="Diabetologist",
-                location="Coimbatore, TN",
-                associated_conditions=["diabetes"],
-                description="Leading expert in glycemic control and insulin management.",
-                rating=4.9
-            ),
-            MedicalProvider(
-                name="Fortis Multi-Speciality",
-                type="hospital",
-                specialty="General Medicine",
-                location="Bangalore",
-                associated_conditions=["obesity", "anemia"],
-                description="Comprehensive metabolic and dietary counseling services.",
-                rating=4.6
-            ),
-            MedicalProvider(
-                name="Dr. Rajesh Kumar",
-                type="doctor",
-                specialty="Nephrologist",
-                location="Chennai, TN",
-                associated_conditions=["kidney_disease"],
-                description="Expert in renal care and chronic kidney disease management.",
-                rating=4.7
-            )
-        ]
-        db.add_all(seed_providers)
+        db.add_all(SEED_PROVIDERS)
         db.commit()
 
-    # 2. Get recommendations
-    user_profile = {
-        "full_name": user.full_name,
-        "age": user.age,
-        "health_conditions": user.health_conditions or []
-    }
-    
-    recommendations = get_care_recommendations(user_profile, db)
-    
-    # 3. Enrich with provider details
-    result = []
-    for rec in recommendations:
-        provider = db.query(MedicalProvider).filter(MedicalProvider.id == rec["provider_id"]).first()
-        if provider:
-            result.append({
-                "id": provider.id,
-                "name": provider.name,
-                "type": provider.type,
-                "specialty": provider.specialty,
-                "location": provider.location,
-                "rating": provider.rating,
-                "reason": rec["reason"],
-                "urgency": rec["urgency"]
-            })
-            
-    return result
+    conditions = [c.lower() for c in (user.health_conditions or [])]
+
+    # If no conditions or only General Health — return top general providers
+    if not conditions or conditions == ["general_health"]:
+        providers = db.query(MedicalProvider).limit(4).all()
+    else:
+        # Match providers whose associated_conditions overlap with user conditions
+        all_providers = db.query(MedicalProvider).all()
+        matched = {}
+        for p in all_providers:
+            p_conditions = [c.lower() for c in (p.associated_conditions or [])]
+            overlap = set(conditions) & set(p_conditions)
+            if overlap:
+                matched[p.id] = (p, len(overlap))
+        # Sort by overlap count desc
+        providers = [p for p, _ in sorted(matched.values(), key=lambda x: -x[1])][:4]
+
+    return [
+        {
+            "id": p.id,
+            "name": p.name,
+            "type": p.type,
+            "specialty": p.specialty,
+            "location": p.location,
+            "contact": p.contact or "N/A",
+            "rating": p.rating,
+            "reason": f"Recommended based on your health profile. Specializes in {p.specialty}.",
+            "urgency": "Routine"
+        }
+        for p in providers
+    ]

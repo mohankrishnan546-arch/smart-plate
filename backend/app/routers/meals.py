@@ -58,7 +58,7 @@ def get_today_meals(db: Session = Depends(get_db), user: User = Depends(get_curr
 
 
 @router.get("/summary", response_model=DailySummary)
-def daily_summary(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def daily_summary(lang: str = "en", db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     today = datetime.utcnow().date()
     meals = (
         db.query(MealLog)
@@ -87,7 +87,7 @@ def daily_summary(db: Session = Depends(get_db), user: User = Depends(get_curren
     }
 
     # Initialize alerts with daily health engine findings
-    alerts = evaluate_daily_alerts(today_summary)
+    alerts = evaluate_daily_alerts(today_summary, lang=lang)
     
     # Get dynamic AI recommendations based on profile
     from app.services.ai_model import get_ai_recommendations
@@ -95,7 +95,7 @@ def daily_summary(db: Session = Depends(get_db), user: User = Depends(get_curren
         "full_name": user.full_name,
         "health_conditions": user.health_conditions or []
     }
-    ai_recs = get_ai_recommendations(user_dict, today_summary)
+    ai_recs = get_ai_recommendations(user_dict, today_summary, lang=lang)
     alerts.extend(ai_recs)
 
     return DailySummary(
@@ -126,6 +126,9 @@ def meal_history(days: int = 7, db: Session = Depends(get_db), user: User = Depe
             "food_name": m.food_name,
             "meal_type": m.meal_type,
             "calories": m.calories,
+            "protein_g": m.protein_g,
+            "carbs_g": m.carbs_g,
+            "fat_g": m.fat_g,
             "logged_at": m.logged_at.isoformat(),
         }
         for m in meals

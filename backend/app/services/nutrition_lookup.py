@@ -59,13 +59,39 @@ ICMR_NUTRITION_DB = {
     "tandoori_chicken": {"calories": 148, "protein_g": 22, "carbs_g": 3, "fat_g": 5.1, "fiber_g": 0.5, "sugar_g": 1, "sodium_mg": 420, "cholesterol_mg": 85, "serving_size": "1 piece (150g)"},
     "upma": {"calories": 135, "protein_g": 3.5, "carbs_g": 20, "fat_g": 4.5, "fiber_g": 1.2, "sugar_g": 0.5, "sodium_mg": 250, "cholesterol_mg": 0, "serving_size": "1 cup (200g)"},
     "vada": {"calories": 290, "protein_g": 8, "carbs_g": 30, "fat_g": 15.2, "fiber_g": 3.1, "sugar_g": 1.2, "sodium_mg": 310, "cholesterol_mg": 0, "serving_size": "2 pieces (80g each)"},
+    "poori": {"calories": 320, "protein_g": 6.5, "carbs_g": 35, "fat_g": 17.0, "fiber_g": 2.5, "sugar_g": 1.0, "sodium_mg": 350, "cholesterol_mg": 0, "serving_size": "2 pooris (100g)"},
     "khichdi": {"calories": 108, "protein_g": 3.8, "carbs_g": 19, "fat_g": 1.8, "fiber_g": 1.5, "sugar_g": 0.3, "sodium_mg": 200, "cholesterol_mg": 0, "serving_size": "1 cup (200g)"},
     "chole": {"calories": 180, "protein_g": 8.9, "carbs_g": 27, "fat_g": 4.5, "fiber_g": 7.6, "sugar_g": 4.8, "sodium_mg": 410, "cholesterol_mg": 0, "serving_size": "1 cup (200g)"},
     "aloo_gobi": {"calories": 88, "protein_g": 2.5, "carbs_g": 12, "fat_g": 3.5, "fiber_g": 2.8, "sugar_g": 2.5, "sodium_mg": 260, "cholesterol_mg": 0, "serving_size": "1 cup (180g)"},
+    "chicken_biryani": {"calories": 290, "protein_g": 18, "carbs_g": 32, "fat_g": 10, "fiber_g": 1.5, "sugar_g": 1, "sodium_mg": 550, "cholesterol_mg": 45, "serving_size": "1 plate (300g)"},
+    "mutton_biryani": {"calories": 320, "protein_g": 15, "carbs_g": 30, "fat_g": 16, "fiber_g": 1.5, "sugar_g": 1, "sodium_mg": 580, "cholesterol_mg": 60, "serving_size": "1 plate (300g)"},
+    "chicken_curry": {"calories": 240, "protein_g": 22, "carbs_g": 8, "fat_g": 14, "fiber_g": 1, "sugar_g": 2, "sodium_mg": 480, "cholesterol_mg": 70, "serving_size": "1 bowl (250g)"},
+    "mutton_curry": {"calories": 280, "protein_g": 20, "carbs_g": 10, "fat_g": 18, "fiber_g": 1, "sugar_g": 2, "sodium_mg": 510, "cholesterol_mg": 85, "serving_size": "1 bowl (250g)"},
+    "beef_fry": {"calories": 310, "protein_g": 24, "carbs_g": 4, "fat_g": 22, "fiber_g": 0.5, "sugar_g": 0.5, "sodium_mg": 450, "cholesterol_mg": 90, "serving_size": "150g"},
+    "beef_curry": {"calories": 270, "protein_g": 21, "carbs_g": 9, "fat_g": 16, "fiber_g": 1, "sugar_g": 1.5, "sodium_mg": 490, "cholesterol_mg": 80, "serving_size": "250g"},
+    "chicken_65": {"calories": 180, "protein_g": 20, "carbs_g": 5, "fat_g": 9, "fiber_g": 0.5, "sugar_g": 0.5, "sodium_mg": 680, "cholesterol_mg": 65, "serving_size": "100g"},
+    "tandoori_chicken": {"calories": 265, "protein_g": 32, "carbs_g": 6, "fat_g": 12, "fiber_g": 1, "sugar_g": 1.5, "sodium_mg": 410, "cholesterol_mg": 85, "serving_size": "Half Chicken"},
+    "gajar_halwa": {"calories": 156, "protein_g": 2.1, "carbs_g": 24, "fat_g": 6, "fiber_g": 0.8, "sugar_g": 18, "sodium_mg": 45, "cholesterol_mg": 15, "serving_size": "100g"},
+    "lassi": {"calories": 120, "protein_g": 3, "carbs_g": 15, "fat_g": 5, "fiber_g": 0, "sugar_g": 14, "sodium_mg": 120, "cholesterol_mg": 15, "serving_size": "1 cup (250ml)"},
+    "fish_curry": {"calories": 210, "protein_g": 18, "carbs_g": 6, "fat_g": 12, "fiber_g": 0.5, "sugar_g": 1.2, "sodium_mg": 460, "cholesterol_mg": 60, "serving_size": "1 bowl (200g)"},
+    "fish_fry": {"calories": 320, "protein_g": 22, "carbs_g": 5, "fat_g": 23, "fiber_g": 0, "sugar_g": 0.5, "sodium_mg": 580, "cholesterol_mg": 65, "serving_size": "150g"},
+    "grilled_fish": {"calories": 180, "protein_g": 24, "carbs_g": 1, "fat_g": 9, "fiber_g": 0, "sugar_g": 0.1, "sodium_mg": 300, "cholesterol_mg": 55, "serving_size": "1 piece (150g)"},
+}
+
+# ─── GLOBAL FOODS (Chinese, Mediterranean, etc.) ───
+GLOBAL_NUTRITION_DB = {
+    "dumplings": {"calories": 140, "protein_g": 6.7, "carbs_g": 18.5, "fat_g": 4.4, "fiber_g": 1, "sugar_g": 0.5, "sodium_mg": 450, "cholesterol_mg": 10, "serving_size": "4 pieces"},
+    "pad_thai": {"calories": 178, "protein_g": 7.8, "carbs_g": 26, "fat_g": 5, "fiber_g": 1.2, "sugar_g": 6, "sodium_mg": 440, "cholesterol_mg": 15, "serving_size": "250g"},
+    "miso_soup": {"calories": 40, "protein_g": 3, "carbs_g": 5, "fat_g": 1.5, "fiber_g": 1, "sugar_g": 2, "sodium_mg": 850, "cholesterol_mg": 0, "serving_size": "1 bowl (240ml)"},
+    "hummus": {"calories": 166, "protein_g": 8, "carbs_g": 14, "fat_g": 10, "fiber_g": 6, "sugar_g": 0.3, "sodium_mg": 380, "cholesterol_mg": 0, "serving_size": "100g"},
+    "falafel": {"calories": 333, "protein_g": 13.3, "carbs_g": 31.8, "fat_g": 17.8, "fiber_g": 4.9, "sugar_g": 0.3, "sodium_mg": 294, "cholesterol_mg": 0, "serving_size": "3 pieces (75g)"},
+    "enchilada": {"calories": 168, "protein_g": 8, "carbs_g": 14, "fat_g": 9, "fiber_g": 2.2, "sugar_g": 2, "sodium_mg": 410, "cholesterol_mg": 25, "serving_size": "1 piece"},
+    "lasagna": {"calories": 135, "protein_g": 10.4, "carbs_g": 9.2, "fat_g": 6.8, "fiber_g": 0.8, "sugar_g": 1.8, "sodium_mg": 320, "cholesterol_mg": 20, "serving_size": "100g"},
+    "spring_rolls": {"calories": 150, "protein_g": 3.7, "carbs_g": 20.1, "fat_g": 6, "fiber_g": 1.5, "sugar_g": 1.2, "sodium_mg": 285, "cholesterol_mg": 5, "serving_size": "2 rolls"},
 }
 
 # Merged database
-ALL_NUTRITION = {**USDA_NUTRITION_DB, **ICMR_NUTRITION_DB}
+ALL_NUTRITION = {**USDA_NUTRITION_DB, **ICMR_NUTRITION_DB, **GLOBAL_NUTRITION_DB}
 
 # Default fallback
 DEFAULT_NUTRITION = {

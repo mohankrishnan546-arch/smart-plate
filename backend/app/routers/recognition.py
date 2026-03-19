@@ -33,7 +33,7 @@ async def recognize_food(file: UploadFile = File(...), db: Session = Depends(get
         if not prediction.get("is_food", True):
             raise HTTPException(
                 status_code=400, 
-                detail="Object detected is not food. NutriVision only analyzes food items."
+                detail="Object detected is not food. Smart Plate only analyzes food items."
             )
 
         # 3. Nutrition data (Gemini provides 'nutrition', fallback to local DB)

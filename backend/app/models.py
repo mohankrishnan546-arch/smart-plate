@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for NutriVision AI."""
+"""SQLAlchemy ORM models for Smart Plate AI."""
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -20,7 +20,11 @@ class User(Base):
     medical_history = Column(Text)
     weight_kg = Column(Float)
     height_cm = Column(Float)
+    activity_level = Column(String(50), default="Sedentary") # e.g. "Moderate", "Active"
+    goal = Column(String(50), default="Maintain") # e.g. "Lose Weight", "Gain Muscle"
     health_conditions = Column(JSON, default=[])  # e.g. ["diabetes", "hypertension"]
+    is_verified = Column(Integer, default=0) # 0 = Not verified, 1 = Verified
+    verification_code = Column(String(10), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     meals = relationship("MealLog", back_populates="user")
@@ -82,15 +86,28 @@ class MealLog(Base):
     user = relationship("User", back_populates="meals")
 
 
+
 class MedicalProvider(Base):
     __tablename__ = "medical_providers"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(200), nullable=False)
-    type = Column(String(50))  # "doctor" or "hospital"
-    specialty = Column(String(100)) # e.g. "Cardiologist", "Diabetologist"
+    type = Column(String(50))           # "doctor" or "hospital"
+    specialty = Column(String(100))
     location = Column(String(200))
     contact = Column(String(100))
     rating = Column(Float, default=4.5)
     description = Column(Text)
-    associated_conditions = Column(JSON, default=[]) # e.g. ["diabetes", "hypertension"]
+    associated_conditions = Column(JSON, default=[])
+class MedicalBooking(Base):
+    __tablename__ = "medical_bookings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("medical_providers.id"), nullable=False)
+    appointment_date = Column(DateTime)
+    status = Column(String(20), default="Pending") # Pending, Confirmed, Cancelled
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    provider = relationship("MedicalProvider")

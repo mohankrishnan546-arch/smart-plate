@@ -1,5 +1,4 @@
-"""Pydantic schemas for request/response validation."""
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
@@ -15,6 +14,11 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+
+class EmailVerify(BaseModel):
+    email: str
+    code: str
 
 
 class GuestOnboarding(BaseModel):
@@ -37,16 +41,25 @@ class UserProfile(BaseModel):
     age: Optional[int]
     weight_kg: Optional[float]
     height_cm: Optional[float]
+    activity_level: Optional[str] = "Sedentary"
+    goal: Optional[str] = "Maintain"
     health_conditions: Optional[List[str]] = []
 
     class Config:
         from_attributes = True
 
 
+class AccountUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+
+
 class HealthProfileUpdate(BaseModel):
     age: Optional[int] = None
     weight_kg: Optional[float] = None
     height_cm: Optional[float] = None
+    activity_level: Optional[str] = None
+    goal: Optional[str] = None
     health_conditions: Optional[List[str]] = None
 
 

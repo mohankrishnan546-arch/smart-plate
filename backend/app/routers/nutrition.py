@@ -30,11 +30,12 @@ def search_food(q: str = Query(..., min_length=2), db: Session = Depends(get_db)
         ]
 
     # Fallback to in-memory data
+    from app.services.nutrition_lookup import ALL_NUTRITION
     q_lower = q.lower()
     matches = []
-    for name, data in USDA_NUTRITION_DB.items():
-        if q_lower in name.lower():
-            matches.append({"name": name, "source": "usda", **data})
+    for name, data in ALL_NUTRITION.items():
+        if q_lower in name.lower().replace("_", " "):
+            matches.append({"name": name, "source": "local", **data})
     return matches[:20]
 
 
