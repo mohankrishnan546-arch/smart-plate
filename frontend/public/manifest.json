@@ -3,9 +3,9 @@
   "name": "Smart Plate — Food Intelligence AI",
   "icons": [
     {
-      "src": "logo_final.png",
+      "src": "logo_final.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ],

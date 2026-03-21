@@ -1,14 +1,16 @@
 import os
-from dotenv import load_dotenv
 import google.generativeai as genai
+from dotenv import load_dotenv
 
 load_dotenv()
-api_key = os.environ.get("GEMINI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
+print(f"Testing with key: {api_key[:10]}...")
+
 try:
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            print(m.name)
+    model = genai.GenerativeModel('gemini-2.0-flash')
+    response = model.generate_content("Hi")
+    print(f"Result: {response.text.strip()}")
 except Exception as e:
-    print("Error listing:", e)
+    print(f"Error: {e}")

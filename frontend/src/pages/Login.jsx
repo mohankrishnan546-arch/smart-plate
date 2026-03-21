@@ -135,7 +135,7 @@ export default function Login() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} 
               className="w-full h-full rounded-full bg-black/60 flex items-center justify-center overflow-hidden relative z-10 border-2 border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]"
             >
-              <img src="/logo_final.png" alt="Smart AI" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-700" />
+              <img src="/logo_final.jpg" alt="Smart AI" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-700" />
               <div className="absolute inset-0 bg-emerald-500/5 animate-pulse pointer-events-none" />
             </motion.div>
           </div>

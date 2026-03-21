@@ -31,7 +31,7 @@ export default function Layout() {
                 <div className="absolute inset-[-8px] rounded-full border border-emerald-500/20 animate-reverse-spin-slow opacity-30" />
                 
                 <div className="w-full h-full rounded-full border border-white/10 bg-black/40 shadow-2xl flex items-center justify-center overflow-hidden relative z-10">
-                   <img src="/logo_final.png" alt="Smart Plate" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                   <img src="/logo_final.jpg" alt="Smart Plate" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
                 </div>
             </div>
             <div>
