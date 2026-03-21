@@ -27,11 +27,11 @@ export default function Layout() {
         <div className="flex flex-col items-center gap-6 mb-16 text-center">
             <div className="relative w-24 h-24 group">
                 {/* Tech Rings */}
-                <div className="absolute inset-[-4px] rounded-full border border-primary-500/30 animate-spin-slow" />
-                <div className="absolute inset-[-8px] rounded-full border border-secondary-400/20 animate-reverse-spin-slow opacity-30" />
+                <div className="absolute inset-[-4px] rounded-full border border-emerald-500/30 animate-spin-slow" />
+                <div className="absolute inset-[-8px] rounded-full border border-emerald-500/20 animate-reverse-spin-slow opacity-30" />
                 
                 <div className="w-full h-full rounded-full border border-white/10 bg-black/40 shadow-2xl flex items-center justify-center overflow-hidden relative z-10">
-                   <img src="/logo_final.png" alt="Smart Plate" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                   <img src="/logo_final.png" alt="Smart Plate" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
                 </div>
             </div>
             <div>

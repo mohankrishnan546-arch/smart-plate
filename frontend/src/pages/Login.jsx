@@ -124,8 +124,8 @@ export default function Login() {
         <div className="text-center mb-12 relative z-10">
           <div className="relative w-32 h-32 mx-auto mb-10 group">
             {/* Pure Glowing Tech Rings (No gaps) */}
-            <div className="absolute inset-[-6px] rounded-full border-2 border-primary-500/40 animate-spin-slow shadow-[0_0_20px_rgba(34,211,238,0.3)]" />
-            <div className="absolute inset-[-12px] rounded-full border border-secondary-400/20 animate-reverse-spin-slow opacity-40" />
+            <div className="absolute inset-[-6px] rounded-full border-2 border-emerald-500/40 animate-spin-slow shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
+            <div className="absolute inset-[-12px] rounded-full border border-emerald-500/20 animate-reverse-spin-slow opacity-40" />
             
             {/* The Main Circular Plate Logo */}
             <motion.div 
@@ -133,10 +133,10 @@ export default function Login() {
                   y: [0, -8, 0]
               }} 
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} 
-              className="w-full h-full rounded-full bg-black/60 flex items-center justify-center overflow-hidden relative z-10 border-2 border-primary-500/20 shadow-[0_0_40px_rgba(0,242,254,0.15)]"
+              className="w-full h-full rounded-full bg-black/60 flex items-center justify-center overflow-hidden relative z-10 border-2 border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]"
             >
-              <img src="/logo_final.png" alt="Smart AI" className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-primary-500/5 animate-pulse pointer-events-none" />
+              <img src="/logo_final.png" alt="Smart AI" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-emerald-500/5 animate-pulse pointer-events-none" />
             </motion.div>
           </div>
           <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 italic">Smart <span className="text-primary-500">Plate</span></h1>
