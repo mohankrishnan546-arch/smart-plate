@@ -17,10 +17,10 @@ api.interceptors.request.use((config) => {
 })
 
 // ── Recognition ──
-export const recognizeFood = async (imageFile) => {
+export const recognizeFood = async (imageFile, lang = 'en') => {
   const formData = new FormData()
   formData.append('file', imageFile)
-  const res = await api.post('/api/v1/recognize/', formData, {
+  const res = await api.post(`/api/v1/recognize/?lang=${lang}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
   return res.data
@@ -39,6 +39,11 @@ export const getFoodNutrition = async (foodName) => {
 
 export const getDailyTargets = async () => {
   const res = await api.get('/api/v1/nutrition/daily-targets')
+  return res.data
+}
+
+export const addCustomFood = async (foodData) => {
+  const res = await api.post('/api/v1/nutrition/add', foodData)
   return res.data
 }
 

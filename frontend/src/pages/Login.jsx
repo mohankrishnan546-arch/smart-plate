@@ -4,7 +4,7 @@ import {
   User, Activity, Shield, ArrowRight, Loader2, Heart, Sparkles, 
   Mail, Lock, UserPlus, CheckCircle2
 } from 'lucide-react'
-import { login, register } from '../api'
+import { login, register, loginGuest } from '../api'
 import { useLanguage } from '../App'
 
 const floatingFoods = ['🍎', '🥑', '🥦', '🥕', '🥗', '🍗', '🥛', '🍇', '🍋', '🥬']
@@ -122,29 +122,43 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none" />
         
         <div className="text-center mb-12 relative z-10">
-          <motion.div 
-            animate={{ 
-                rotate: [0, 5, -5, 0],
-                y: [0, -10, 0]
-            }} 
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} 
-            className="w-24 h-24 rounded-full mx-auto mb-8 bg-black/40 flex items-center justify-center border-2 border-primary-500/40 shadow-[0_0_30px_rgba(34,211,238,0.2)] overflow-hidden"
-          >
-                <img src="/app_logo.jpg" alt="Smart AI" className="w-full h-full object-cover scale-[1.55]" />
-          </motion.div>
+          <div className="relative w-32 h-32 mx-auto mb-10 group">
+            {/* Pure Glowing Tech Rings (No gaps) */}
+            <div className="absolute inset-[-6px] rounded-full border-2 border-emerald-500/40 animate-spin-slow shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
+            <div className="absolute inset-[-12px] rounded-full border border-emerald-500/20 animate-reverse-spin-slow opacity-40" />
+            
+            {/* The Main Circular Plate Logo */}
+            <motion.div 
+              animate={{ 
+                  y: [0, -8, 0]
+              }} 
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} 
+              className="w-full h-full rounded-full bg-black/60 flex items-center justify-center overflow-hidden relative z-10 border-2 border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]"
+            >
+              <img src="/logo_final.jpg" alt="Smart AI" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-emerald-500/5 animate-pulse pointer-events-none" />
+            </motion.div>
+          </div>
           <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 italic">Smart <span className="text-primary-500">Plate</span></h1>
           <p className="text-[8px] text-dark-500 font-bold uppercase tracking-[0.4em] opacity-60">Food Intelligence Core</p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-dark-900/50 p-1.5 rounded-2xl mb-8 border border-white/5 shadow-inner">
+        <div className="flex bg-dark-900/50 p-1.5 rounded-2xl mb-8 border border-white/5 shadow-inner relative">
             {['signin', 'signup'].map(t => (
               <button
                 key={t}
                 onClick={() => { setTab(t); setError(''); setSuccess(''); }}
-                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
-                           ${tab === t ? 'bg-primary-500 text-dark-950 shadow-xl' : 'text-dark-400 hover:text-white'}`}
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative z-10
+                           ${tab === t ? 'text-dark-950' : 'text-dark-400 hover:text-white'}`}
               >
+                {tab === t && (
+                  <motion.div 
+                     layoutId="tabIndicator" 
+                     className="absolute inset-0 bg-primary-500 rounded-xl shadow-xl z-[-1]" 
+                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
                 {t === 'signin' ? 'Sign In' : 'Sign Up'}
               </button>
             ))}
@@ -160,54 +174,82 @@ export default function Login() {
               className="space-y-4"
             >
               {tab === 'signup' && (
-                <div className="space-y-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-2">
                    <label className="text-[9px] font-black text-dark-500 uppercase tracking-widest ml-1">Full Name</label>
-                   <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-                      <input name="full_name" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm" placeholder="John Doe" value={formData.full_name} onChange={handleChange} required />
-                   </div>
-                </div>
+                   <motion.div whileFocus={{ scale: 1.02 }} className="relative group">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                      <input name="full_name" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm focus:border-primary-500/50 transition-all shadow-inner" placeholder="John Doe" value={formData.full_name} onChange={handleChange} required />
+                   </motion.div>
+                </motion.div>
               )}
 
-              <div className="space-y-2">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-2">
                 <label className="text-[9px] font-black text-dark-500 uppercase tracking-widest ml-1">{tab === 'signin' ? 'Username or Email' : 'Username'}</label>
-                <div className="relative">
-                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-                   <input name="username" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm" placeholder="john_doe" value={formData.username} onChange={handleChange} required />
-                </div>
-              </div>
+                <motion.div whileFocus={{ scale: 1.02 }} className="relative group">
+                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                   <input name="username" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm focus:border-primary-500/50 transition-all shadow-inner" placeholder="john_doe" value={formData.username} onChange={handleChange} required />
+                </motion.div>
+              </motion.div>
 
               {tab === 'signup' && (
-                <div className="space-y-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-2">
                    <label className="text-[9px] font-black text-dark-500 uppercase tracking-widest ml-1">Email Address</label>
-                   <div className="relative">
-                      <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-                      <input name="email" type="email" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm" placeholder="john@example.com" value={formData.email} onChange={handleChange} required />
-                   </div>
-                </div>
+                   <motion.div whileFocus={{ scale: 1.02 }} className="relative group">
+                      <CheckCircle2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                      <input name="email" type="email" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm focus:border-primary-500/50 transition-all shadow-inner" placeholder="john@example.com" value={formData.email} onChange={handleChange} required />
+                   </motion.div>
+                </motion.div>
               )}
 
-              <div className="space-y-2">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="space-y-2">
                 <label className="text-[9px] font-black text-dark-500 uppercase tracking-widest ml-1">Secure Password</label>
-                <div className="relative">
-                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-                   <input name="password" type="password" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
-                </div>
-              </div>
+                <motion.div whileFocus={{ scale: 1.02 }} className="relative group">
+                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                   <input name="password" type="password" className="input-glass w-full pl-12 py-4 bg-white/5 text-sm focus:border-primary-500/50 transition-all shadow-inner" placeholder="••••••••" value={formData.password} onChange={handleChange} required />
+                </motion.div>
+              </motion.div>
             </motion.div>
           </AnimatePresence>
 
           {error && <p className="text-[10px] text-red-400 font-bold bg-red-500/10 p-4 rounded-xl border border-red-500/20">{error}</p>}
           {success && <p className="text-[10px] text-green-400 font-bold bg-green-500/10 p-4 rounded-xl border border-green-500/20">{success}</p>}
 
-          <button type="submit" disabled={loading} className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl flex items-center justify-center gap-3 active:scale-95 group transition-all">
+          <motion.button 
+            type="submit" 
+            disabled={loading} 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-3xl shadow-primary-500/20 flex items-center justify-center gap-3 group transition-all overflow-hidden relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out pointer-events-none" />
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-              <>
-                <span>{tab === 'signin' ? 'Unlock Dashboard' : 'Create Account'}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
+                <span className="relative z-10">{tab === 'signin' ? (t.unlockDashboard || 'Establish Dashboard Link') : (t.createAccount || 'Register Biometric ID')}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative z-10" />
+              </motion.div>
             )}
-          </button>
+          </motion.button>
+          
+          <div className="text-center pt-4">
+             <button 
+               type="button" 
+               onClick={async () => {
+                 setLoading(true);
+                 try {
+                   const data = await loginGuest({ full_name: 'Guest Explorer' });
+                   localStorage.setItem('token', data.access_token);
+                   window.location.href = '/';
+                 } catch(err) {
+                    setError('Guest access failed.');
+                 } finally {
+                    setLoading(false);
+                 }
+               }}
+               className="text-[9px] font-black uppercase tracking-[0.2em] text-dark-500 hover:text-white transition-colors"
+             >
+                — {t.guestUser || 'Continue as Guest'} —
+             </button>
+          </div>
         </form>
 
         <div className="mt-10 pt-8 border-t border-white/5 opacity-50">

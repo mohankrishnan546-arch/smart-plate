@@ -10,7 +10,7 @@ import { useLanguage } from '../App'
 
 export default function ScanFood() {
   const navigate = useNavigate()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const [image, setImage] = useState(null)
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -96,7 +96,7 @@ export default function ScanFood() {
     setError(null)
     setResult(null)
     try {
-      const data = await recognizeFood(image)
+      const data = await recognizeFood(image, lang)
       setResult(data)
     } catch (err) {
       console.error("Scan error:", err)
@@ -418,72 +418,6 @@ export default function ScanFood() {
           </AnimatePresence>
         </div>
       </div>
-      
-      {/* Sensors Monitoring */}
-      <SensorsPanel />
     </div>
   )
-}
-
-function SensorsPanel() {
-  const { t } = useLanguage()
-  const [motionData, setMotionData] = useState({ steps: 0, activity: 'Calibrated' });
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    if (!active) return;
-    let lastAccel = { x: 0, y: 0, z: 0 };
-    let steps = 0;
-
-    const handleMotion = (event) => {
-      const accel = event.accelerationIncludingGravity;
-      if (!accel) return;
-      const delta = Math.sqrt(
-        Math.pow(accel.x - lastAccel.x, 2) +
-        Math.pow(accel.y - lastAccel.y, 2) +
-        Math.pow(accel.z - lastAccel.z, 2)
-      );
-      if (delta > 12) {
-        steps++;
-        setMotionData({ steps, activity: delta > 25 ? 'High Intensity' : 'Movement' });
-      }
-      lastAccel = { x: accel.x, y: accel.y, z: accel.z };
-    };
-
-    window.addEventListener('devicemotion', handleMotion);
-    return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [active]);
-
-  return (
-    <div className="fixed bottom-10 right-10 z-50">
-      <motion.div 
-        whileHover={{ scale: 1.05 }}
-        className={`glass p-6 shadow-3xl border-white/10 w-72 backdrop-blur-3xl transition-all duration-500 ${active ? 'ring-2 ring-primary-500/50 scale-105' : 'opacity-80 grayscale'}`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-             <div className={`w-2.5 h-2.5 rounded-full ${active ? 'bg-green-500 animate-pulse shadow-[0_0_15px_rgba(34,197,94,1)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,1)]'}`} />
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">SENSORS {active ? (t.active || 'ACTIVE') : (t.sensorsOff || 'OFF')}</span>
-          </div>
-          <button 
-            onClick={() => setActive(!active)}
-            className={`text-[9px] px-4 py-2 rounded-2xl font-black uppercase tracking-widest transition-all duration-300
-                       ${active ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-primary-500 text-dark-950 shadow-2xl shadow-primary-500/20'}`}
-          >
-            {active ? t.lock : t.startLabel}
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <p className="text-[8px] text-dark-600 uppercase font-black mb-2 tracking-[0.2em]">{t.state}</p>
-            <p className="font-black text-sm truncate uppercase tracking-tighter text-white italic">{motionData.activity}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[8px] text-dark-600 uppercase font-black mb-2 tracking-[0.2em]">{t.dynamics}</p>
-            <p className="font-black text-3xl text-primary-500 leading-none italic">{motionData.steps}</p>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
 }

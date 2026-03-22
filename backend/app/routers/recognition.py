@@ -1,5 +1,5 @@
 """Food recognition router — YOLOv8 + Food-101 inference."""
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Query
 from app.schemas import FoodRecognitionResult, NutritionInfo
 from app.services.ai_model import predict_food, get_personalized_verdict
 from app.services.nutrition_lookup import get_nutrition
@@ -15,7 +15,12 @@ router = APIRouter()
 
 
 @router.post("/", response_model=FoodRecognitionResult)
-async def recognize_food(file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+async def recognize_food(
+    file: UploadFile = File(...), 
+    db: Session = Depends(get_db), 
+    user: User = Depends(get_current_user),
+    lang: str = Query("en")
+):
     """Upload a food image → get food name, nutrition, and health alerts."""
     allowed = {"image/jpeg", "image/png", "image/webp"}
     if file.content_type not in allowed:
@@ -42,16 +47,16 @@ async def recognize_food(file: UploadFile = File(...), db: Session = Depends(get
         else:
             nutrition = get_nutrition(prediction["food_name"])
 
-        # 4. Health alerts
-        alerts = evaluate_health_alerts(nutrition)
+        # 4. Health alerts (with language support)
+        alerts = evaluate_health_alerts(nutrition, lang=lang)
 
-        # 5. Personalized Verdict (Analyze based on user conditions)
+        # 5. Personalized Verdict (Analyze based on user conditions and language)
         user_profile = {
             "full_name": user.full_name,
             "age": user.age,
             "health_conditions": user.health_conditions or []
         }
-        verdict_data = get_personalized_verdict(prediction["food_name"], nutrition, user_profile)
+        verdict_data = get_personalized_verdict(prediction["food_name"], nutrition, user_profile, lang=lang)
 
         return FoodRecognitionResult(
             food_name=prediction["food_name"],

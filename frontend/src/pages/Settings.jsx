@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { User, Globe, Shield, Save, LogOut, Loader2, Sparkles, CheckCircle } from 'lucide-react'
 import { getUserProfile, updateAccountProfile } from '../api'
 import { useLanguage } from '../App'
@@ -10,6 +10,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [showTerms, setShowTerms] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -180,12 +182,51 @@ export default function Settings() {
         </motion.div>
       </div>
 
-      <div className="mt-16 text-center opacity-20">
-         <p className="text-dark-600 font-bold uppercase tracking-[0.5em] text-[8px] flex items-center justify-center gap-4 italic leading-loose">
+      <div className="mt-16 border-t border-white/5 pt-10 text-center relative z-10">
+         <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-8 uppercase tracking-[0.2em] font-black text-[9px] text-dark-500">
+             <button onClick={() => setShowTerms(true)} className="hover:text-primary-500 transition-colors uppercase">Terms of Service</button>
+             <span className="w-1 h-1 rounded-full bg-dark-700 hidden md:block" />
+             <button onClick={() => setShowPrivacy(true)} className="hover:text-secondary-400 transition-colors uppercase">Privacy Policy</button>
+         </div>
+
+         <p className="text-dark-600 font-bold uppercase tracking-[0.5em] text-[8px] flex flex-col items-center justify-center gap-2 italic leading-loose opacity-30">
             Precision Biomedical Engine v1.0.0.Alpha <br/>
             Authorization: Clinical HMIS-28492
          </p>
       </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {(showTerms || showPrivacy) && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => { setShowTerms(false); setShowPrivacy(false); }}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              className="glass p-8 md:p-12 max-w-2xl w-full max-h-[80vh] overflow-y-auto relative rounded-3xl"
+            >
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-6">
+                 {showTerms ? "Terms of Service" : "Privacy Policy"}
+              </h2>
+              <div className="space-y-4 text-sm font-bold text-dark-400 leading-relaxed">
+                  <p>1. <strong className="text-white">General Information:</strong> Smart Plate is an AI-powered health and nutrition app. By using the app, you agree that data is processed for personalization.</p>
+                  <p>2. <strong className="text-white">Medical Disclaimer:</strong> The nutritional calculations and AI health alerts are approximations and strictly <span className="text-red-400">NOT intended for medical diagnosis</span>. Consult a physician before starting any diet.</p>
+                  <p>3. <strong className="text-white">Data Processing:</strong> Your food images are processed through local YOLOv8 models or Google Gemini AI purely for object recognition. No personal identity is attached to external image analysis.</p>
+                  <p>4. <strong className="text-white">Local Storage:</strong> Your medical details (bio-profile, conditions like diabetes) are stored locally in the database. Deleting the cache may clear offline data.</p>
+              </div>
+              <button 
+                onClick={() => { setShowTerms(false); setShowPrivacy(false); }}
+                className="mt-8 w-full btn-primary py-4 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+              >
+                Acknowledge and Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

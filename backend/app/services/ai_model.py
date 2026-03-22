@@ -5,13 +5,13 @@ from app.config import settings
 
 # Try loading YOLO; graceful fallback if not available
 _model = None
-# try:
-#     from ultralytics import YOLO
-#     model_path = os.getenv("YOLO_MODEL_PATH", "yolov8n.pt")
-#     _model = YOLO(model_path)
-#     print(f"[AI] YOLOv8 model loaded from {model_path}")
-# except Exception as e:
-#     print(f"[AI] YOLOv8 not available, using fallback classifier: {e}")
+try:
+    from ultralytics import YOLO
+    model_path = os.getenv("YOLO_MODEL_PATH", "yolov8n.pt")
+    _model = YOLO(model_path)
+    print(f"[AI] YOLOv8 model loaded from {model_path}")
+except Exception as e:
+    print(f"[AI] YOLOv8 not available, using fallback classifier: {e}")
 
 # Food-101 class names (subset mapped to common foods)
 FOOD_101_CLASSES = [
@@ -44,7 +44,9 @@ INDIAN_FOODS = [
     "idli", "naan", "palak_paneer", "paneer_tikka", "paratha",
     "poha", "rajma", "roti", "sambar", "tandoori_chicken",
     "upma", "vada", "khichdi", "chole", "aloo_gobi",
-    "poori", "fish_curry", "fish_fry", "grilled_fish"
+    "poori", "fish_curry", "fish_fry", "grilled_fish",
+    "curd_rice", "rasam", "tomato_rice", "idiyapam", "parotta", "paneer_tikka",
+    "samosa", "bhelpuri", "vada_pav", "pani_puri", "rogan_josh", "appalam"
 ]
 
 ALL_FOODS = FOOD_101_CLASSES + INDIAN_FOODS
@@ -76,8 +78,8 @@ def predict_food(image_path: str) -> dict:
 if settings.GEMINI_API_KEY:
     try:
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        _gemini = genai.GenerativeModel('gemini-1.5-flash')
-        print("[AI] Gemini 1.5 Flash initialized")
+        _gemini = genai.GenerativeModel('gemini-2.0-flash')
+        print("[AI] Gemini 2.0 Flash initialized")
     except Exception as e:
         _gemini = None
         print(f"[AI] Gemini initial configuration error: {e}")
@@ -98,16 +100,25 @@ def _predict_with_gemini(image_path: str) -> dict:
             img_data = f.read()
 
         prompt = """
-        You are a professional nutrition and food recognition AI.
-        Analyze the image and:
-        1. Determine if it contains food. If it's NOT food, return {"is_food": false}.
-        2. If it IS food, provide the exact name of the dish and estimated nutrition per 100g.
+        You are an elite clinical nutritionist and expert computer vision AI specializing in global cuisines.
+        
+        CRITICAL ANALYSIS PROTOCOL:
+        1. IDENTIFICATION: Distinguish between visually similar items by analyzing texture, shape, and context.
+           - Poori (bread) is hollow, round, and smooth; Fried Fish has a flaky internal texture and rougher skin.
+           - Fish Curry is identified by a red/orange tamarind-based gravy with cross-sectional fish slices (containing a central bone).
+           - Curd Rice (creamy white with pomegranate/tadka), Rasam (thin red soup), Tomato Rice (orange-red seasoned rice).
+           - Idiyapam (noodle-like nest), Parotta (layered flatbread), Ice cream (frozen scoop).
+           - Analyze side dishes (Sambar, Chutney, Tartar sauce) to confirm the main dish identity.
+        
+        2. VALIDATION: If the image is NOT food (e.g., a person, landscape, object), return: {"is_food": false}.
+        
+        3. OUTPUT: Provide the most common and concise name (e.g., "Fish Fry" instead of descriptive prefixes like "Madras") and estimated nutritional value per 100g.
         
         Respond ONLY with a JSON object:
         {
           "is_food": true,
-          "food_name": "Exact Dish Name",
-          "confidence": 0.98,
+          "food_name": "Common Dish Name",
+          "confidence": 0.99,
           "nutrition": {
             "calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0,
             "fiber_g": 0.0, "sugar_g": 0.0, "sodium_mg": 0.0, "cholesterol_mg": 0.0,
@@ -132,7 +143,9 @@ def _predict_with_gemini(image_path: str) -> dict:
         data = json.loads(text)
         return data
     except Exception as e:
-        print(f"[AI] Gemini Error: {e}")
+        print(f"[AI] Gemini Recognition Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -223,26 +236,59 @@ def get_ai_recommendations(user_profile: dict, today_summary: dict, lang: str = 
         return ["Consult with a nutritionist for personalized plans."]
 
 
-def get_personalized_verdict(food_name: str, nutrition: dict, user_profile: dict) -> dict:
+def get_personalized_verdict(food_name: str, nutrition: dict, user_profile: dict, lang: str = "en") -> dict:
     """
     Personalized Health Advisor AI:
     Analyzes a specific food against a user's medical conditions.
     Returns: {"verdict": "Safe/Caution/Avoid", "explanation": "Why?"}
     """
     if not settings.GEMINI_API_KEY:
+        # Offline logic with basic multi-lang fallback
         cond = " ".join(user_profile.get('health_conditions', [])).lower()
-        if "diabetes" in cond and nutrition.get("sugar_g", 0) > 10:
-            return {"verdict": "Avoid", "explanation": f"High sugar ({nutrition.get('sugar_g')}g) may cause a glucose spike, which is dangerous for Diabetes."}
-        if "hypertension" in cond and nutrition.get("sodium_mg", 0) > 400:
-            return {"verdict": "Caution", "explanation": f"High sodium ({nutrition.get('sodium_mg')}mg) can elevate your blood pressure."}
-        if "obesity" in cond and nutrition.get("calories", 0) > 500:
-            return {"verdict": "Caution", "explanation": f"High calorie density ({nutrition.get('calories')} kcal) could impact your weight management goals."}
-        return {"verdict": "Safe", "explanation": "This food's nutritional profile aligns well with your current health parameters and poses no immediate risk."}
+        sugar = nutrition.get("sugar_g", 0)
+        sodium = nutrition.get("sodium_mg", 0)
+        cals = nutrition.get("calories", 0)
+        
+        verdicts = {
+            "en": {
+                "safe": "This food's nutritional profile aligns well with your current health parameters and poses no immediate risk.",
+                "diabetes_avoid": f"High sugar ({sugar}g) may cause a glucose spike, which is dangerous for Diabetes.",
+                "hyper_caution": f"High sodium ({sodium}mg) can elevate your blood pressure.",
+                "obesity_caution": f"High calorie density ({cals} kcal) could impact your weight management goals."
+            },
+            "ta": {
+                "safe": "இந்த உணவின் ஊட்டச்சத்துக்கள் உங்கள் தற்போதைய ஆரோக்கிய நிலைக்கு ஏற்றதாக உள்ளன, மேலும் இது எவ்வித உடனடி பாதிப்பையும் ஏற்படுத்தாது.",
+                "diabetes_avoid": f"அதிகப்படியான சர்க்கரை ({sugar}g) குளுக்கோஸ் அளவை திடீரென அதிகரிக்கக்கூடும், இது நீரிழிவு நோய்க்கு ஆபத்தானது.",
+                "hyper_caution": f"அதிகப்படியான சோடியம் ({sodium}mg) உங்கள் இரத்த அழுத்தத்தை அதிகரிக்கக்கூடும்.",
+                "obesity_caution": f"அதிகப்படியான கலோரிகள் ({cals} kcal) உங்கள் உடல் எடை குறைப்பு இலக்குகளை பாதிக்கலாம்."
+            },
+            "hi": {
+                "safe": "इस भोजन का पोषण प्रोफाइल आपके वर्तमान स्वास्थ्य मापदंडों के साथ अच्छी तरह से मेल खाता है और इससे कोई तत्काल खतरा नहीं है।",
+                "diabetes_avoid": f"उच्च चीनी ({sugar}ग्राम) ग्लूकोज में अचानक वृद्धि का कारण बन सकती है, जो मधुमेह के लिए खतरनाक है।",
+                "hyper_caution": f"उच्च सोडियम ({sodium}मिलीग्राम) आपके रक्तचाप को बढ़ा सकता है।",
+                "obesity_caution": f"उच्च कैलोरी घनत्व ({cals} किलो कैलोरी) आपके वजन प्रबंधन लक्ष्यों को प्रभावित कर सकता है।"
+            }
+        }
+        
+        t = verdicts.get(lang, verdicts["en"])
+        
+        if "diabetes" in cond and sugar > 10:
+            return {"verdict": "Avoid", "explanation": t["diabetes_avoid"]}
+        if "hypertension" in cond and sodium > 400:
+            return {"verdict": "Caution", "explanation": t["hyper_caution"]}
+        if "obesity" in cond and cals > 500:
+            return {"verdict": "Caution", "explanation": t["obesity_caution"]}
+            
+        return {"verdict": "Safe", "explanation": t["safe"]}
 
     if not _gemini: return {"verdict": "Caution", "explanation": "Offline mode."}
     try:
+        lang_map = {"en": "English", "ta": "Tamil", "hi": "Hindi"}
+        target_lang = lang_map.get(lang, "English")
+        
         prompt = f"""
         You are a clinical nutrition expert. Analyze this food for a specific user.
+        The response MUST be in {target_lang}.
         
         Food: {food_name}
         Nutrition (per 100g): {json.dumps(nutrition)}
@@ -257,7 +303,7 @@ def get_personalized_verdict(food_name: str, nutrition: dict, user_profile: dict
         Respond ONLY with a JSON object:
         {{
           "verdict": "Safe" | "Caution" | "Avoid",
-          "explanation": "A concise, professional explanation of why this verdict was given for their specific conditions."
+          "explanation": "A concise, professional explanation in {target_lang} of why this verdict was given for their specific conditions."
         }}
         """
         
@@ -289,7 +335,6 @@ def _predict_with_yolo(image_path: str) -> dict:
                 best_conf = conf
                 best_name = name
 
-    # Map YOLO generic classes to food names
     food_mapping = {
         "bowl": "rice_bowl",
         "sandwich": "club_sandwich",
@@ -303,9 +348,13 @@ def _predict_with_yolo(image_path: str) -> dict:
         "broccoli": "broccoli",
         "carrot": "carrot",
     }
+    
+    if best_name.lower() == "person":
+        return {"food_name": "person", "confidence": round(best_conf, 3), "is_food": False}
+        
     mapped = food_mapping.get(best_name.lower(), best_name)
 
-    return {"food_name": mapped, "confidence": round(best_conf, 3)}
+    return {"food_name": mapped, "confidence": round(best_conf, 3), "is_food": True}
 
 
 def _predict_fallback(image_path: str) -> dict:
@@ -317,4 +366,4 @@ def _predict_fallback(image_path: str) -> dict:
             return {"food_name": food, "confidence": 0.85}
 
     # Default demo response optimized for current context
-    return {"food_name": "poori", "confidence": 0.94}
+    return {"food_name": "unknown_food", "confidence": 0.5}

@@ -75,8 +75,26 @@ export default function Dashboard() {
       {/* Header */}
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-white leading-tight">
-            {t.welcomeMessage} <span className="gradient-text">{profile?.full_name || t.champion}</span>
+          <h1 className="text-4xl font-black tracking-tight text-white leading-tight flex flex-wrap gap-x-3">
+            {t.welcomeMessage.split(' ').map((word, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="inline-block"
+              >
+                {word}
+              </motion.span>
+            ))}
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: t.welcomeMessage.split(' ').length * 0.1 }}
+              className="gradient-text italic"
+            >
+              {profile?.full_name || t.champion}
+            </motion.span>
           </h1>
           <p className="text-dark-400 mt-2 font-black uppercase tracking-widest text-[10px] flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary-500" />
@@ -84,17 +102,41 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-           <NavLink to="/health" className="glass px-8 py-4 flex items-center gap-3 hover:bg-white/5 transition-all group overflow-hidden relative">
-               <div className="absolute inset-0 bg-primary-500/5 translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
-               <Sparkles className="w-5 h-5 text-primary-500 relative z-10" />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white relative z-10">{t.syncProfile}</span>
-           </NavLink>
            <div className="glass-sm px-6 py-2.5 flex items-center gap-3 border-primary-500/20 shadow-2xl shadow-primary-500/5">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,1)]" />
               <span className="text-[9px] uppercase font-black tracking-[0.2em] text-primary-500">{t.systemOnline}</span>
            </div>
         </div>
       </div>
+
+      {/* Health DNA Completion CTA */}
+      {profile && (!profile.weight || !profile.height || !profile.health_conditions?.length) && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          whileHover={{ scale: 1.01 }}
+          transition={{ type: "spring", bounce: 0.4 }}
+          className="mb-10 glass border-dashed border-primary-500/40 p-10 bg-gradient-to-r from-primary-500/5 to-transparent relative overflow-hidden group cursor-pointer shadow-xl shadow-primary-500/10"
+        >
+          <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
+             <Activity className="w-48 h-48" />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+            <div>
+              <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4">Personalize Your Health AI ⚡</h3>
+              <p className="text-dark-400 font-bold max-w-xl leading-relaxed">
+                Unlock precision scanning and customized health alerts today by completing your medical bio-profile.
+              </p>
+            </div>
+            <NavLink 
+              to="/health" 
+              className="px-10 py-5 rounded-2xl bg-primary-500 text-dark-950 font-black uppercase tracking-[0.2em] text-xs hover:scale-110 active:scale-95 transition-all shadow-xl shadow-primary-500/20"
+            >
+              Update Bio-Profile
+            </NavLink>
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats Grid */}
       <motion.div
@@ -103,13 +145,18 @@ export default function Dashboard() {
         animate="show"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"
       >
-        <motion.div variants={fadeUp} className="stat-card group relative overflow-hidden">
-          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
+        <motion.div 
+          variants={fadeUp} 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }}
+          className="stat-card group relative overflow-hidden"
+        >
+          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700">
              <Flame className="w-32 h-32" />
           </div>
           <div className="flex items-center justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400">
-               <Flame className="w-5 h-5" />
+               <Flame className="w-5 h-5 group-hover:animate-pulse" />
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-orange-400/10 text-orange-400 uppercase tracking-widest">
               {Math.round((todayCalories / targetCalories) * 100)}%
@@ -130,13 +177,18 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="stat-card group relative overflow-hidden">
-          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
+        <motion.div 
+          variants={fadeUp} 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }}
+          className="stat-card group relative overflow-hidden"
+        >
+          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700">
              <Drumstick className="w-32 h-32" />
           </div>
           <div className="flex items-center justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-primary-500/10 text-primary-500">
-               <Drumstick className="w-5 h-5" />
+               <Drumstick className="w-5 h-5 group-hover:animate-bounce" />
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-500 uppercase tracking-widest">
                {Math.round((todayProtein / targetProtein) * 100)}%
@@ -157,13 +209,18 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="stat-card group relative overflow-hidden">
-          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
+        <motion.div 
+          variants={fadeUp} 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }}
+          className="stat-card group relative overflow-hidden"
+        >
+          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700">
              <Wheat className="w-32 h-32" />
           </div>
           <div className="flex items-center justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-secondary-400/10 text-secondary-400">
-               <Wheat className="w-5 h-5" />
+               <Wheat className="w-5 h-5 group-hover:rotate-12 transition-transform" />
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-secondary-400/10 text-secondary-400 uppercase tracking-widest">
               {Math.round((todayCarbs / targetCarbs) * 100)}%
@@ -184,13 +241,18 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="stat-card group relative overflow-hidden">
-          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 transition-opacity">
+        <motion.div 
+          variants={fadeUp} 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }}
+          className="stat-card group relative overflow-hidden"
+        >
+          <div className="absolute top-[-20%] right-[-10%] opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700">
              <Droplets className="w-32 h-32" />
           </div>
           <div className="flex items-center justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
-               <Droplets className="w-5 h-5" />
+               <Droplets className="w-5 h-5 group-hover:animate-pulse" />
             </div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 uppercase tracking-widest">
                {Math.round((todayFat / targetFat) * 100)}%
@@ -298,9 +360,16 @@ export default function Dashboard() {
           </div>
           <div className="space-y-5">
             {history.slice(0, 4).length > 0 ? history.slice(0, 4).map((meal, i) => (
-              <div key={i} className="flex items-center justify-between p-5 rounded-[2rem] bg-white/[0.02] border border-white/5 group hover:bg-primary-500/5 hover:border-primary-500/20 transition-all duration-300">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                className="flex items-center justify-between p-5 rounded-[2rem] bg-white/[0.02] border border-white/5 group hover:border-primary-500/20 shadow-2xl shadow-black/20 transition-all duration-300 cursor-default"
+              >
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-2xl bg-dark-900 flex items-center justify-center text-3xl border border-white/5 shadow-2xl group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 rounded-2xl bg-dark-900 flex items-center justify-center text-3xl border border-white/5 shadow-2xl group-hover:scale-110 group-hover:-rotate-6 transition-transform">
                     {meal.food_name.toLowerCase().includes('chicken') ? '🍗' : '🍲'}
                   </div>
                   <div>
@@ -311,10 +380,10 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-xl font-black text-orange-400 leading-none mb-1">{meal.calories.toFixed(0)}</p>
+                    <p className="text-xl font-black text-orange-400 leading-none mb-1 group-hover:animate-pulse">{meal.calories.toFixed(0)}</p>
                     <p className="text-[9px] text-dark-600 font-black uppercase tracking-widest">Kcal</p>
                 </div>
-              </div>
+              </motion.div>
             )) : <div className="py-20 border-2 border-dashed border-white/5 rounded-[3rem] text-center text-dark-600 italic font-black uppercase tracking-widest text-xs opacity-50">{t.noMeals}</div>}
           </div>
         </motion.div>

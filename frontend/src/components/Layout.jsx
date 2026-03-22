@@ -1,5 +1,5 @@
-import { Outlet, NavLink } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Camera, UtensilsCrossed, Heart, Search, Sparkles, Stethoscope, 
   Settings as SettingsIcon
@@ -8,12 +8,12 @@ import { useLanguage } from '../App'
 
 export default function Layout() {
   const { t } = useLanguage()
+  const location = useLocation()
 
   const navItems = [
     { to: '/',       icon: LayoutDashboard, label: t.dashboard },
     { to: '/scan',   icon: Camera,          label: t.scanFood },
     { to: '/meals',  icon: UtensilsCrossed, label: t.mealLog },
-    { to: '/health', icon: Heart,           label: t.health },
     { to: '/search', icon: Search,          label: t.nutrition },
     { to: '/care',   icon: Stethoscope,     label: t.careNetwork },
     { to: '/settings', icon: SettingsIcon,   label: t.settings },
@@ -24,33 +24,45 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className="hidden lg:flex flex-col w-72 p-6 border-r border-white/5 bg-dark-950/40 backdrop-blur-xl">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-12 h-12 rounded-full border-2 border-primary-500/30 overflow-hidden shadow-2xl shadow-primary-500/10 bg-black/40 flex items-center justify-center">
-            <img src="/app_logo.jpg" alt="Smart Plate" className="w-full h-full object-cover scale-[1.55]" />
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-white leading-tight uppercase tracking-tighter">Smart <span className="gradient-text">Plate</span></h1>
-            <p className="text-[8px] text-dark-500 tracking-[0.3em] uppercase font-black">{t.aiIntelligence}</p>
-          </div>
+        <div className="flex flex-col items-center gap-6 mb-16 text-center">
+            <div className="relative w-24 h-24 group">
+                {/* Tech Rings */}
+                <div className="absolute inset-[-4px] rounded-full border border-emerald-500/30 animate-spin-slow" />
+                <div className="absolute inset-[-8px] rounded-full border border-emerald-500/20 animate-reverse-spin-slow opacity-30" />
+                
+                <div className="w-full h-full rounded-full border border-white/10 bg-black/40 shadow-2xl flex items-center justify-center overflow-hidden relative z-10">
+                   <img src="/logo_final.jpg" alt="Smart Plate" className="w-[125%] h-[125%] object-cover scale-110 group-hover:scale-125 transition-transform duration-500" />
+                </div>
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white leading-tight uppercase tracking-tighter italic">Smart <span className="text-primary-500">Plate</span></h1>
+              <p className="text-[8px] text-dark-500 tracking-[0.4em] uppercase font-black opacity-60 mt-1">{t.aiIntelligence}</p>
+            </div>
         </div>
 
         {/* Nav Links */}
         <nav className="flex flex-col gap-2 flex-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
+          {navItems.map(({ to, icon: Icon, label }, i) => (
+            <motion.div
               key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                `flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300
-                 ${isActive 
-                   ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20 shadow-2xl shadow-primary-500/5' 
-                   : 'text-dark-400 hover:bg-white/5 hover:text-white'}`
-              }
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
             >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
-            </NavLink>
+              <NavLink
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300
+                   ${isActive 
+                     ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20 shadow-2xl shadow-primary-500/5 scale-105' 
+                     : 'text-dark-400 hover:bg-white/5 hover:text-white hover:scale-[1.02]'}`
+                }
+              >
+                <Icon className="w-4 h-4" />
+                <span>{label}</span>
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 
@@ -85,14 +97,18 @@ export default function Layout() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6 lg:p-10 pb-32 lg:pb-10 bg-dark-950/20 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none" />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10"
-        >
-          <Outlet />
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="relative z-10"
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   )

@@ -63,6 +63,25 @@ class HealthProfileUpdate(BaseModel):
     health_conditions: Optional[List[str]] = None
 
 
+class FoodItemCreate(BaseModel):
+    name: str
+    category: Optional[str] = "Manual"
+    calories: float
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+    fiber_g: Optional[float] = 0
+    sugar_g: Optional[float] = 0
+    sodium_mg: Optional[float] = 0
+    potassium_mg: Optional[float] = 0
+    cholesterol_mg: Optional[float] = 0
+    vitamin_a_iu: Optional[float] = 0
+    vitamin_c_mg: Optional[float] = 0
+    calcium_mg: Optional[float] = 0
+    iron_mg: Optional[float] = 0
+    serving_size: Optional[str] = "100g"
+
+
 # ── Food / Nutrition ──
 class NutritionInfo(BaseModel):
     calories: float

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import FoodItem
+from app.schemas import FoodItemCreate
 from app.services.nutrition_lookup import get_nutrition, USDA_NUTRITION_DB
 
 router = APIRouter()
@@ -62,3 +63,29 @@ def get_daily_targets():
         "calcium_mg": 1000,
         "iron_mg": 18,
     }
+@router.post("/add")
+def add_custom_food(item: FoodItemCreate, db: Session = Depends(get_db)):
+    """Add a new food item to the database."""
+    db_item = FoodItem(
+        name=item.name,
+        category=item.category,
+        source="user",
+        calories=item.calories,
+        protein_g=item.protein_g,
+        carbs_g=item.carbs_g,
+        fat_g=item.fat_g,
+        fiber_g=item.fiber_g,
+        sugar_g=item.sugar_g,
+        sodium_mg=item.sodium_mg,
+        potassium_mg=item.potassium_mg,
+        cholesterol_mg=item.cholesterol_mg,
+        vitamin_a_iu=item.vitamin_a_iu,
+        vitamin_c_mg=item.vitamin_c_mg,
+        calcium_mg=item.calcium_mg,
+        iron_mg=item.iron_mg,
+        serving_size=item.serving_size
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item

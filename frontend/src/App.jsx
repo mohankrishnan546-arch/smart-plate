@@ -35,6 +35,15 @@ function App() {
     // Force direct application to root for specific cases
     const root = document.getElementById('root')
     if (root) root.style.fontFamily = selectedFont
+
+    // Global GPS Permission Request at Entry
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        () => console.log("GPS Precision Active"),
+        () => console.log("GPS Restricted"),
+        { enableHighAccuracy: false }
+      )
+    }
   }, [lang])
 
   const t = translations[lang] || translations.en

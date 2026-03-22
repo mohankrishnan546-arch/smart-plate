@@ -8,6 +8,24 @@
   100% { transform: scale(1) rotate(360deg); opacity: 0.6; }
 }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reverse-spin-slow {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-reverse-spin-slow {
+  animation: reverse-spin-slow 12s linear infinite;
+}
+
 @layer base {
   body {
     @apply text-white antialiased overflow-x-hidden;

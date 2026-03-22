@@ -33,7 +33,7 @@ export default function HealthProfile() {
     setMessage('')
     try {
       await updateHealthProfile(profile)
-      setMessage(t.success || 'Health DNA synchronized successfully!')
+      setMessage(t.success || 'Health MATRIX synchronized successfully!')
       setTimeout(() => setMessage(''), 3000)
     } catch (err) {
       console.error("Update error:", err)
@@ -68,7 +68,7 @@ export default function HealthProfile() {
         </div>
         <div>
           <h1 className="text-6xl font-black text-white leading-none tracking-tighter uppercase mb-4">
-             Health <span className="gradient-text">DNA</span> 🧬
+             Health <span className="gradient-text">MATRIX</span> 🔗
           </h1>
           <p className="text-dark-400 font-bold italic tracking-wide">{t.aiIntelligence} biological profile management</p>
         </div>
