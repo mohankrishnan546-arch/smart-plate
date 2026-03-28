@@ -9,7 +9,7 @@ Smart Plate AI is a Food Recognition & Health Analytics Platform built strictly 
 - **Styling:** Tailwind CSS (Custom themes, Glassmorphism, Premium Dark UI)
 - **Charts:** Recharts
 - **Animations:** Framer Motion
-- **Deployment:** Ready for **Vercel** (`frontend/vercel.json` included)
+- **Deployment:** Ready for **Automatic PWA Hosting**
 
 ### Backend (API & Logic)
 - **Framework:** FastAPI (Python)
@@ -58,22 +58,6 @@ npm run dev
 
 ---
 
-## 🌐 How to Deploy (Free Tier)
-
-### Deploy Backend to Render (Free Tier)
-1. Push this repository to GitHub.
-2. Go to [Render](https://render.com/), click **New +**, and select **Blueprint**.
-3. Point it to your repository. It will automatically read the `render.yaml` file to set up:
-   - A free PostgreSQL database.
-   - A free Web Service running the FastAPI Docker container.
-
-### Deploy Frontend to Vercel (Free Tier)
-1. Go to [Vercel](https://vercel.com/) and import your GitHub repository.
-2. Select the **`frontend`** folder as the Root Directory.
-3. The framework preset should automatically detect **Vite**.
-4. Set the Environment Variable `VITE_API_URL` to your Render backend URL (e.g., `https://smart-plate-api.onrender.com`).
-5. Click **Deploy**.
-
 ---
 
 ## 📂 Project Structure
@@ -100,5 +84,4 @@ d:\project\
 │   ├── package.json          # Node Dependencies
 │   ├── tailwind.config.js    # Custom styling themes
 │   └── vercel.json           # Vercel Deployment configuration
-└── legacy/                   # Previous Vanilla HTML/JS implementation
 ```
