@@ -72,6 +72,18 @@ def get_current_user(db: Session = Depends(get_db), authorization: str = Header(
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+def get_current_user_optional(db: Session = Depends(get_db), authorization: str = Header(None)):
+    """Extracts user if token is valid, otherwise returns None without error."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return db.query(User).filter(User.id == int(payload["sub"])).first()
+    except Exception:
+        return None
+
+
 @router.post("/register", response_model=Token)
 def register(data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == data.username).first():

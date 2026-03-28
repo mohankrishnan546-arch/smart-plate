@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     # AI Model
     YOLO_MODEL_PATH: str = "yolov8n.pt"
     GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+    XAI_API_KEY: str = ""
+    PORT: int = 8000
+    VITE_API_URL: str = ""
 
     # JWT
     SECRET_KEY: str = "smartplate-super-secret-key-change-in-production"

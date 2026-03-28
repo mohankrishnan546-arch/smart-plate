@@ -107,6 +107,8 @@ class FoodRecognitionResult(BaseModel):
     health_alerts: List[str] = []
     personalized_verdict: Optional[str] = None
     personalized_explanation: Optional[str] = None
+    allergens: List[str] = []
+    additives: List[str] = []
 
 
 class MealLogCreate(BaseModel):

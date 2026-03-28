@@ -1,0 +1,8 @@
+[AI] Starting food scan for: temp_OIP.webp
+[AI] Groq Scout Vision Success: pizza
+[AI] Starting food scan for: temp_Ambur-Chicken-Biriyani.jpg
+[AI] Groq Scout Vision Success: biryani
+[AI] Recommendations Error: Expecting ',' delimiter: line 1 column 133 (char 132)
+[AI] Recommendations Error: Expecting ',' delimiter: line 1 column 136 (char 135)
+[AI] Recommendations Error: Expecting ',' delimiter: line 1 column 136 (char 135)
+[AI] Recommendations Error: Expecting ',' delimiter: line 1 column 136 (char 135)
