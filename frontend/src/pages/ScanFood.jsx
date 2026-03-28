@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { 
   Camera, Upload, Loader2, Sparkles, AlertTriangle, CheckCircle, X, 
-  Maximize, RefreshCw, ShieldCheck, Plus, Flame, Activity
+  Maximize, RefreshCw, ShieldCheck, Plus, Flame, Activity, ShieldAlert, Biohazard,
+  Search, ExternalLink, Info, Clock, TrendingUp
 } from 'lucide-react'
 import { recognizeFood, logMeal } from '../api'
 import { useLanguage } from '../App'
@@ -18,6 +19,7 @@ export default function ScanFood() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
+
   
   const fileRef = useRef()
   const videoRef = useRef(null)
@@ -107,14 +109,14 @@ export default function ScanFood() {
     }
   }
 
-  const handleLog = async () => {
+  const handleLogWithType = async (type) => {
     if (!result) return
     setLogging(true)
     try {
       const { nutrition, food_name } = result;
       await logMeal({
         food_name,
-        meal_type: 'snack',
+        meal_type: type,
         quantity: 1.0,
         calories: nutrition.calories,
         protein_g: nutrition.protein_g,
@@ -138,7 +140,7 @@ export default function ScanFood() {
   const handleDrop = (e) => {
     e.preventDefault()
     const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) {
+    if (file) {
       setImage(file)
       setPreview(URL.createObjectURL(file))
       setResult(null)
@@ -162,6 +164,8 @@ export default function ScanFood() {
           animate={{ opacity: 1, x: 0 }}
           className="glass p-8 h-fit overflow-hidden relative"
         >
+
+
           <div className="flex gap-3 mb-8">
             <button 
               onClick={() => { stopCamera(); fileRef.current?.click(); }}
@@ -211,8 +215,19 @@ export default function ScanFood() {
             ) : preview ? (
               <div className="relative group p-6 w-full h-full flex items-center justify-center">
                 <img src={preview} alt="Food biological preview" className="max-h-[400px] rounded-[2rem] object-cover shadow-3xl border border-white/10 group-hover:scale-105 transition-transform duration-700" />
+                
+                {/* Laser Scanning Animation */}
+                {loading && (
+                    <motion.div 
+                        initial={{ top: '10%' }}
+                        animate={{ top: '90%' }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "linear", repeatType: "reverse" }}
+                        className="absolute left-10 right-10 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent shadow-[0_0_15px_rgba(59,130,246,1)] z-20"
+                    />
+                )}
+                
                 <button 
-                  onClick={() => { setPreview(null); setImage(null); }}
+                  onClick={() => { setPreview(null); setImage(null); setResult(null); }}
                   className="absolute top-10 right-10 p-4 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-all backdrop-blur-3xl border border-white/10"
                 >
                   <X className="w-5 h-5" />
@@ -226,12 +241,13 @@ export default function ScanFood() {
                 </div>
                 <h3 className="font-black text-3xl mb-4 text-white uppercase tracking-tighter italic">{t.captureOrUpload}</h3>
                 <p className="text-[10px] text-dark-500 max-w-[280px] font-black uppercase tracking-[0.2em] leading-relaxed group-hover:text-primary-500/50 transition-colors">{t.pointCamera}</p>
+                <p className="mt-4 text-[8px] text-dark-700 font-bold uppercase tracking-widest opacity-50">Supports: JPG, PNG, HEIC, JFIF, BMP</p>
               </div>
             )}
           </div>
 
           <canvas ref={canvasRef} className="hidden" />
-          <input ref={fileRef} type="file" accept="image/*,.jfif" className="hidden" onChange={handleFile} />
+          <input ref={fileRef} type="file" accept="image/*,.jfif,.heic,.heif,.webp" className="hidden" onChange={handleFile} />
 
           <button
             onClick={handleScan}
@@ -276,9 +292,20 @@ export default function ScanFood() {
                        <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse shadow-[0_0_15px_rgba(59,130,246,1)]" />
                       <span className="text-[10px] uppercase tracking-[0.3em] text-primary-500 font-black">{t.verificationResult}</span>
                     </div>
-                    <h3 className="text-4xl font-black capitalize tracking-tighter text-white leading-none">
-                      {result.food_name.replace(/_/g, ' ')}
-                    </h3>
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-4xl font-black capitalize tracking-tighter text-white leading-none">
+                        {result.food_name.replace(/_/g, ' ')}
+                        </h3>
+                        <a 
+                            href={`https://www.google.com/search?q=${result.food_name}+nutrition+facts+per+100g`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all hover:scale-110 active:scale-95"
+                            title="Compare on Google"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                        </a>
+                    </div>
                   </div>
                   <div className={`px-6 py-5 rounded-[2.5rem] flex flex-col items-center justify-center border-2
                     ${result.confidence > 0.8
@@ -349,24 +376,64 @@ export default function ScanFood() {
                 )}
 
                 <div className="space-y-4">
-                  <button 
-                    onClick={handleLog}
-                    disabled={logging}
-                    className="w-full btn-primary py-6 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-3xl shadow-primary-500/40 active:scale-95 transition-transform"
-                  >
-                    {logging ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                        <><Plus className="w-6 h-6" /> {t.commitToLog}</>
-                    )}
-                  </button>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { id: 'breakfast', label: t.breakfast, icon: Clock, color: 'bg-primary-500' },
+                      { id: 'lunch', label: t.lunch, icon: Flame, color: 'bg-orange-500' },
+                      { id: 'dinner', label: t.dinner, icon: Activity, icon_com: Activity, color: 'bg-indigo-500' },
+                      { id: 'snack', label: t.snack, icon: TrendingUp, color: 'bg-amber-500' }
+                    ].map((m) => (
+                      <button 
+                        key={m.id}
+                        onClick={() => handleLogWithType(m.id)}
+                        disabled={logging}
+                        className={`py-5 rounded-2xl ${m.color} text-dark-950 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all disabled:opacity-50`}
+                      >
+                        <Plus className="w-3 h-3" /> {m.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <button 
                     onClick={() => {setResult(null); setImage(null); setPreview(null);}}
-                    className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/5 py-5 rounded-3xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95"
+                    className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/5 py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95"
                   >
                     {t.discardAndRescan}
                   </button>
                 </div>
+
+
+                {/* Allergens & Additive Badges (Inspired by FoodScanner) */}
+                {(result.allergens?.length > 0 || result.additives?.length > 0) && (
+                    <div className="mt-12 pt-10 border-t border-white/5 grid grid-cols-1 gap-6">
+                        {result.allergens?.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <ShieldAlert className="w-4 h-4 text-red-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/80">Potential Allergens</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {result.allergens.map((a, i) => (
+                                        <span key={i} className="px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400 uppercase tracking-widest">{a}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {result.additives?.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Biohazard className="w-4 h-4 text-amber-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">Additives & Chemicals</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {result.additives.map((a, i) => (
+                                        <span key={i} className="px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-widest">{a}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
               </motion.div>
             ) : (
               <motion.div
@@ -418,6 +485,33 @@ export default function ScanFood() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-20 max-w-4xl mx-auto pb-20"
+      >
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-12" />
+        <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-8 flex items-center gap-4">
+          <Activity className="w-8 h-8 text-primary-500" /> FAQ & GUIDES
+        </h2>
+        
+        <div className="grid gap-4">
+          {[
+            { q: "How does the Food Scan work?", a: "Our AI uses advanced vision models to analyze your food images, estimating calories and macro-nutrients based on visual volume and density." },
+            { q: "Is this service free to use?", a: "Yes, the Smart Plate scanner is completely free for all users as part of our mission to improve global health." },
+            { q: "Can it identify children's meals?", a: "Absolutely! The AI is trained on diverse portion sizes, making it suitable for monitoring nutrition across all age groups." },
+            { q: "How accurate is the calorie count?", a: "While AI provides high-precision estimates, actual values can vary. It's an excellent tool for tracking trends and maintaining awareness." },
+            { q: "Help! I am getting errors.", a: "If you see a 'Quota Exceeded' error, it means we've hit the temporary limit for free AI processing. Please wait 60 seconds and try again." }
+          ].map((item, id) => (
+            <div key={id} className="glass p-6 group hover:bg-white/[0.04] transition-all cursor-crosshair border border-white/5">
+              <h4 className="text-sm font-black text-primary-400 uppercase tracking-widest mb-2 group-hover:text-white transition-colors">{item.q}</h4>
+              <p className="text-sm text-dark-500 leading-relaxed italic">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   )
 }

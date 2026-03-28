@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="/logo_final.jpg" />
+    <link rel="apple-touch-icon" href="/logo_final.jpg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="Smart Plate - Food Recognition & Health Analytics powered by AI. Scan your food, get instant nutrition data and health insights." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Arima:wght@400;700&family=Hind+Madurai:wght@400;700&family=Hind:wght@400;700&family=Noto+Sans+JP:wght@400;900&family=Hind+Telugu:wght@400;700&family=Hind+Kannada:wght@400;700&family=Hind+Malayalam:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json" />
+    <title>Smart Plate — Food Intelligence Platform</title>
+    <script type="module" crossorigin src="/assets/index-Sz0QrbSG.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C1n-bOHD.css">
+  </head>
+  <body class="bg-dark-950 text-white antialiased overflow-x-hidden">
+    <script>
+      window.onerror = function(m, s, l, c, e) { 
+        document.body.innerHTML += '<div style="color:red;z-index:9999;position:fixed;top:0;left:0;background:black;width:100%;height:100%;padding:20px;font-size:16px;white-space:pre-wrap;font-family:monospace;">ERROR: ' + m + '\n' + s + ':' + l + '\n\n' + (e ? e.stack : '') + '</div>'; 
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        document.body.innerHTML += '<div style="color:red;z-index:9999;position:fixed;top:0;left:0;background:black;width:100%;height:100%;padding:20px;font-size:16px;white-space:pre-wrap;font-family:monospace;">PROMISE ERROR: ' + event.reason + '</div>';
+      });
+    </script>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>

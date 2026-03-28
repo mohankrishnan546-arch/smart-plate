@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Globe, Shield, Save, LogOut, Loader2, Sparkles, CheckCircle } from 'lucide-react'
-import { getUserProfile, updateAccountProfile } from '../api'
+import { User, Globe, Shield, Save, LogOut, Loader2, Sparkles, CheckCircle, Activity } from 'lucide-react'
+import { getUserProfile, updateAccountProfile, updateHealthProfile } from '../api'
 import { useLanguage } from '../App'
 
 export default function Settings() {
@@ -31,10 +31,22 @@ export default function Settings() {
     setSaving(true)
     setMessage('')
     try {
+      // Update account info
       await updateAccountProfile({
         full_name: profile.full_name,
         email: profile.email
       })
+      
+      // Update health info
+      await updateHealthProfile({
+        age: parseInt(profile.age) || 0,
+        weight_kg: parseFloat(profile.weight_kg) || 0,
+        height_cm: parseFloat(profile.height_cm) || 0,
+        activity_level: profile.activity_level,
+        goal: profile.goal,
+        health_conditions: profile.health_conditions || []
+      })
+
       setMessage(t.success || 'Profile updated successfully!')
       setTimeout(() => setMessage(''), 3000)
     } catch (err) {
@@ -154,6 +166,112 @@ export default function Settings() {
             <span className="font-black uppercase tracking-[0.2em] text-[11px]">{t.saveDetails}</span>
           </button>
         </motion.div>
+
+        {/* Health Profile */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass p-10 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none">
+            <Activity className="w-32 h-32 text-primary-500" />
+          </div>
+          <div className="flex items-center gap-4 mb-10">
+            <div className="p-4 rounded-3xl bg-primary-500/10 text-primary-500 shadow-2xl shadow-primary-500/5">
+                <Activity className="w-7 h-7" />
+            </div>
+            <div>
+               <h3 className="font-black text-white text-2xl uppercase tracking-tighter leading-none">Health & Biological Context</h3>
+               <p className="text-[10px] text-dark-500 font-bold uppercase tracking-[0.3em] mt-2">Personalize AI Recognition</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Biological Age</label>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-[1.8rem] p-6 text-sm font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50 shadow-inner" 
+                  value={profile?.age || ''} 
+                  onChange={e => setProfile({...profile, age: e.target.value})}
+                  placeholder="25"
+                />
+            </div>
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Weight (KG)</label>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-[1.8rem] p-6 text-sm font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50 shadow-inner" 
+                  value={profile?.weight_kg || ''} 
+                  onChange={e => setProfile({...profile, weight_kg: e.target.value})}
+                  placeholder="70"
+                />
+            </div>
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Height (CM)</label>
+                <input 
+                  type="number"
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-[1.8rem] p-6 text-sm font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50 shadow-inner" 
+                  value={profile?.height_cm || ''} 
+                  onChange={e => setProfile({...profile, height_cm: e.target.value})}
+                  placeholder="175"
+                />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 relative z-10">
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Activity Level</label>
+                <select 
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-[1.8rem] p-6 text-sm font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50 shadow-inner appearance-none cursor-pointer"
+                  value={profile?.activity_level || 'Sedentary'}
+                  onChange={e => setProfile({...profile, activity_level: e.target.value})}
+                >
+                  <option value="Sedentary">Sedentary (Office Work)</option>
+                  <option value="Lightly Active">Lightly Active (Walking)</option>
+                  <option value="Moderately Active">Moderately Active (Gym 3-4 days)</option>
+                  <option value="Very Active">Very Active (Athlete)</option>
+                </select>
+            </div>
+            <div className="space-y-3">
+                <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Primary Goal</label>
+                <select 
+                  className="w-full bg-dark-950/60 border border-white/5 rounded-[1.8rem] p-6 text-sm font-black uppercase tracking-widest text-white outline-none focus:border-primary-500/50 shadow-inner appearance-none cursor-pointer"
+                  value={profile?.goal || 'Maintain'}
+                  onChange={e => setProfile({...profile, goal: e.target.value})}
+                >
+                  <option value="Maintain">Maintain Weight</option>
+                  <option value="Lose Weight">Lose Weight (Fat Loss)</option>
+                  <option value="Gain Weight">Gain Weight (Bulking)</option>
+                  <option value="Gain Muscle">Gain Muscle (Tone)</option>
+                </select>
+            </div>
+          </div>
+
+          <div className="space-y-3 mb-12 border-t border-white/5 pt-8">
+            <label className="text-[10px] font-black text-dark-600 uppercase tracking-[0.2em] ml-2">Medical Conditions (Used for AI Safety Checks)</label>
+            <div className="flex flex-wrap gap-3 mt-4">
+              {["Diabetes", "Hypertension", "Heart Disease", "Thyroid", "PCOS", "Gluten Allergy", "Dairy Allergy"].map(condition => {
+                const isActive = profile?.health_conditions?.includes(condition);
+                return (
+                  <button
+                    key={condition}
+                    onClick={() => {
+                      const current = profile?.health_conditions || [];
+                      const next = isActive 
+                        ? current.filter(c => c !== condition)
+                        : [...current, condition];
+                      setProfile({...profile, health_conditions: next});
+                    }}
+                    className={`px-6 py-3 rounded-full font-black uppercase tracking-widest text-[9px] transition-all border
+                               ${isActive 
+                                 ? 'bg-primary-500/20 border-primary-500 text-primary-500 shadow-lg shadow-primary-500/10' 
+                                 : 'bg-white/5 border-white/10 text-dark-400 hover:bg-white/10'}`}
+                  >
+                    {condition}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </motion.div>
+
 
         {/* System & Session */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex flex-col md:flex-row gap-6">

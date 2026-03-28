@@ -201,25 +201,6 @@ export default function CareNetwork() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-4 my-4">
-                  <div className="h-px flex-1 bg-white/10" />
-                  <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">{t.or || 'OR'}</span>
-                  <div className="h-px flex-1 bg-white/10" />
-              </div>
-
-              <button 
-                onClick={initiateScan}
-                className="btn-primary w-full py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all shadow-3xl shadow-primary-500/20"
-              >
-                 {permission === 'denied' ? <Activity className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
-                 {permission === 'denied' ? (t.retrySync || 'Refresh System Pulse') : (t.startScanning || 'Start Clinical Scanning')}
-              </button>
-              
-              {permission === 'denied' && (
-                <p className="text-[11px] text-amber-500 font-black italic uppercase tracking-widest animate-pulse mt-4">
-                   ⚠️ {t.resetInstructions || 'Tap the Lock icon 🔒 in the address bar to reset GPS permission.'}
-                </p>
-              )}
             </div>
         </motion.div>
       ) : loading ? (
@@ -337,10 +318,7 @@ export default function CareNetwork() {
                      {t.disclaimerNote || 'Hospital data is fetched from live global OpenStreetMap nodes. Precision may vary based on local infrastructure log data.'}
                   </p>
               </div>
-              <div className="p-6 rounded-[2rem] bg-red-500/5 border border-red-500/10 flex items-center gap-5 max-w-xs">
-                  <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
-                  <p className="text-[9px] text-red-400 font-bold leading-relaxed italic">{t.emergencyNote || 'Emergency medical conditions require immediate traversal to a certified traumatic care facility.'}</p>
-              </div>
+
           </div>
       </motion.div>
     </div>
